@@ -125,6 +125,14 @@ var VACATION_SCHEDULE=[
   {name:"박성기",  start:"2027-01-25",end:"2027-01-28"}
 ];
 
+// 씨월드 인원 휴가 (땜빵 필요)
+var SEAWORLD_SCHEDULE=[
+  {name:"정태경", start:"2026-04-06",end:"2026-04-09"},
+  {name:"박혁신", start:"2026-05-11",end:"2026-05-14"},
+  {name:"김재일", start:"2026-06-16",end:"2026-06-19"},
+  {name:"문환석", start:"2026-10-14",end:"2026-10-17"}
+];
+
 function getWeekDates(){
   var t=new Date(),r=[];
   for(var i=0;i<7;i++){var d=new Date(t);d.setDate(t.getDate()+i);r.push(pad(d.getMonth()+1)+"."+pad(d.getDate()));}
@@ -283,7 +291,7 @@ function render(){
   // HEADER
   var hdr=h("div",{className:"header"});
   var htitle=h("div",{className:"header-title"});
-  htitle.appendChild(h("div",{className:"header-sub"},"FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v2.2</span>"));
+  htitle.appendChild(h("div",{className:"header-sub"},"FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v2.4</span>"));
   htitle.appendChild(h("div",{className:"header-date"},"오늘 · "+fmtToday()));
   hdr.appendChild(htitle);
 
@@ -587,16 +595,25 @@ function renderVacPopup(){
   pclose.onclick=function(){setState({vacPopup:false});};
   phead.appendChild(ptitle);phead.appendChild(pclose);
   inner.appendChild(phead);
-  VACATION_SCHEDULE.forEach(function(v){
+  // 전체 합산 후 날짜순 정렬
+  var allVac=VACATION_SCHEDULE.map(function(v){return Object.assign({},v,{isSeaworld:false});})
+    .concat(SEAWORLD_SCHEDULE.map(function(v){return Object.assign({},v,{isSeaworld:true});}));
+  allVac.sort(function(a,b){return a.start>b.start?1:a.start<b.start?-1:0;});
+  allVac.forEach(function(v){
     var s=new Date(v.start+"T00:00:00"),e=new Date(v.end+"T00:00:00");
     var isActive=today>=s&&today<=e,isPast=today>e;
-    var color=isActive?"#ffd93d":isPast?"#444":"#aaa";
+    var color=isActive?(v.isSeaworld?"#88eeff":"#ffd93d"):isPast?"#444":"#aaa";
     var row=document.createElement("div");
     row.style.cssText="display:flex;align-items:center;padding:8px 0;border-bottom:1px solid #ffffff08";
     var nameEl=document.createElement("div");
-    nameEl.style.cssText="min-width:56px;font-size:13px;font-weight:700;color:"+color;
-    nameEl.textContent=v.name;
-    if(isActive){var badge=document.createElement("span");badge.style.cssText="font-size:9px;background:#ffd93d33;color:#ffd93d;border-radius:4px;padding:1px 5px;margin-left:6px";badge.textContent="휴가중";nameEl.appendChild(badge);}
+    nameEl.style.cssText="min-width:80px;font-size:13px;font-weight:700;color:"+color;
+    nameEl.textContent=v.name+(v.isSeaworld?" (씨월드)":"");
+    if(isActive){
+      var badge=document.createElement("span");
+      badge.style.cssText="font-size:9px;background:"+(v.isSeaworld?"#88eeff33":"#ffd93d33")+";color:"+(v.isSeaworld?"#88eeff":"#ffd93d")+";border-radius:4px;padding:1px 5px;margin-left:6px";
+      badge.textContent="휴가중";
+      nameEl.appendChild(badge);
+    }
     var dateEl=document.createElement("div");
     dateEl.style.cssText="font-size:11px;color:"+(isPast?"#444":"#888")+";margin-left:8px";
     dateEl.textContent=fmtVacDate(v.start)+" ~ "+fmtVacDate(v.end);
