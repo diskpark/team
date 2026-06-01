@@ -1,160 +1,232 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>지게차 주간 근무표</title>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{background:#0d0d1a;color:#e0e0f0;font-family:'Noto Sans KR',sans-serif;min-height:100vh}
-    ::-webkit-scrollbar{width:4px;height:4px}
-    ::-webkit-scrollbar-thumb{background:#333;border-radius:4px}
-    .header{background:linear-gradient(135deg,#0d0d1a 0%,#1a1a3e 100%);border-bottom:1px solid #ffffff11;padding:20px 16px 16px}
-    .header-title{text-align:center;margin-bottom:14px}
-    .header-sub{color:#4a9eff88;font-size:11px;letter-spacing:3px;font-weight:700;margin-bottom:2px}
-    .header-date{font-size:13px;color:#888}
-    .day-row{display:flex;gap:4px}
-    .day-col{flex:1;display:flex;flex-direction:column;gap:4px}
-    .day-label{font-size:12px;font-weight:700;text-align:center}
-    .day-date{font-size:9px;color:#444;text-align:center}
-    .btn-car{border-radius:8px;padding:5px 2px;text-align:center;font-size:10px;font-weight:700;cursor:pointer;border:1px solid #333;background:#1a1a2e;color:#444}
-    .btn-car.on-yes{background:#4a9eff;color:#fff;border-color:#4a9eff}
-    .btn-car.on-no{background:#ff6b6b;color:#fff;border-color:#ff6b6b}
-    .btn-excl{border-radius:8px;padding:5px 2px;text-align:center;font-size:10px;font-weight:700;cursor:pointer;border:1px solid #333;background:#1a1a2e;color:#444;min-height:28px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1px}
-    .btn-excl.has-excl{background:#ff9f7f22;color:#ff9f7f;border-color:#ff9f7f66}
-    .sunday-ctrl{display:flex;flex-direction:column;gap:2px}
-    .sunday-label{font-size:9px;color:#888;text-align:center}
-    .sunday-btns{display:flex;align-items:center;justify-content:center;gap:2px}
-    .sunday-btn{width:18px;height:18px;border-radius:4px;background:#1a1a2e;border:1px solid #333;color:#aaa;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}
-    .sunday-count{font-size:11px;font-weight:700;min-width:16px;text-align:center}
-    .content{padding:16px 16px 0;max-width:540px;margin:0 auto;padding-bottom:60px}
-    .card{background:#13132a;border:1px solid #ffffff0a;border-radius:14px;padding:14px;margin-bottom:14px}
-    .card-title{font-size:11px;font-weight:700;letter-spacing:2px;margin-bottom:10px}
-    .worker-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
-    .worker-btn{border:1.5px solid #ffffff11;border-radius:10px;padding:9px 4px;text-align:center;font-size:12px;font-weight:400;color:#aaa;cursor:pointer;user-select:none;background:#1a1a2e}
-    .worker-btn.selected{background:#4a9eff22;border-color:#4a9eff;color:#fff;font-weight:700}
-    .hint{text-align:center;color:#444;font-size:13px;padding:16px 0}
-    .schedule-wrap{background:#13132a;border:1px solid #ffffff0a;border-radius:14px;overflow:hidden;margin-bottom:16px}
-    .schedule-header{padding:12px 14px 8px;border-bottom:1px solid #ffffff0a;font-size:11px;color:#666;font-weight:700;letter-spacing:2px}
-    .table-wrap{overflow-x:auto;padding:8px 8px 4px}
-    table{width:100%;border-collapse:collapse;font-size:11px}
-    th{padding:4px 6px;text-align:center;min-width:52px;background:#13132a}
-    th .day-name{font-weight:900;font-size:13px}
-    th .day-date2{color:#444;font-size:9px}
-    th .car-status{font-size:9px;font-weight:700}
-    th .excl-count{font-size:9px;color:#ff9f7f;font-weight:700}
-    td{padding:8px 4px;text-align:center;vertical-align:top;font-size:11px;font-weight:600;line-height:2}
-    td.site-label{padding:8px;font-weight:700;font-size:11px;background:#13132a;position:sticky;left:0;z-index:1;border-top:1px solid #ffffff08;white-space:nowrap}
-    th.site-th{padding:6px 8px;color:#555;font-weight:700;text-align:left;white-space:nowrap;background:#13132a;position:sticky;left:0;z-index:2}
-    .ref-wrap{padding:10px 14px 14px;border-top:1px solid #ffffff08}
-    .ref-title{font-size:10px;color:#555;font-weight:700;letter-spacing:2px;margin-bottom:8px}
-    .ref-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:3px}
-    .ref-item{font-size:10px;color:#555}
-    .my-name-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
-    .my-name-btn{border:1.5px solid #ffffff11;border-radius:10px;padding:9px 4px;text-align:center;font-size:12px;font-weight:400;color:#aaa;cursor:pointer;user-select:none;background:#1a1a2e}
-    .my-name-btn.selected{background:#ff9f7f22;border-color:#ff9f7f;color:#fff;font-weight:700}
-    .my-schedule{background:#13132a;border:1px solid #ff9f7f33;border-radius:14px;padding:14px;margin-bottom:14px}
-    .my-schedule-title{font-size:11px;color:#ff9f7f;font-weight:700;letter-spacing:2px;margin-bottom:12px}
-    .my-day-row{display:flex;flex-direction:column;gap:8px}
-    .my-day-item{display:flex;align-items:center;gap:10px;background:#1a1a2e;border-radius:10px;padding:8px 12px}
-    .my-day-label{font-size:12px;font-weight:700;color:#aaa;min-width:28px}
-    .my-day-site{font-size:13px;font-weight:700}
-    .highlight-num{background:#ff9f7f;color:#000;border-radius:4px;padding:0 3px;font-weight:900}
-    .ref-num{color:#4a9eff88;font-weight:700}
-    /* 팝업 */
-    .popup-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:#000000cc;z-index:200;display:flex;align-items:flex-end;justify-content:center}
-    .popup-inner{background:#13132a;border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto}
-    .popup-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-    .popup-day-name{font-size:16px;font-weight:900;color:#fff}
-    .popup-date{font-size:12px;color:#555;margin-left:8px}
-    .popup-close{color:#555;font-size:20px;cursor:pointer;padding:0 4px}
-    .popup-hint{font-size:11px;color:#666;font-weight:700;letter-spacing:2px;margin-bottom:12px}
-    .worker-excl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-    .excl-btn{border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer;border:1.5px solid #ffffff11;background:#1a1a2e}
-    .excl-btn.absent{background:#ff6b6b22;border-color:#ff6b6b}
-    .excl-btn.vacation{background:#ffd93d22;border-color:#ffd93d}
-    .excl-name{font-size:12px;font-weight:600;color:#aaa}
-    .excl-name.absent{color:#ff6b6b}
-    .excl-name.vacation{color:#ffd93d}
-    .excl-type{font-size:10px;font-weight:700;margin-top:3px}
-    .excl-type.absent{color:#ff6b6b}
-    .excl-type.vacation{color:#ffd93d}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>지게차 주간 근무표</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d0d1a;color:#e0e0f0;font-family:'Noto Sans KR',sans-serif;min-height:100vh}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:#333;border-radius:4px}
+.header{background:linear-gradient(135deg,#0d0d1a 0%,#1a1a3e 100%);border-bottom:1px solid #ffffff11;padding:20px 16px 16px}
+.header-title{text-align:center;margin-bottom:14px}
+.header-sub{color:#4a9eff88;font-size:11px;letter-spacing:3px;font-weight:700;margin-bottom:2px}
+.header-date{font-size:13px;color:#888}
+.day-row{display:flex;gap:4px}
+.day-col{flex:1;display:flex;flex-direction:column;gap:4px}
+.day-label{font-size:12px;font-weight:700;text-align:center}
+.day-date{font-size:9px;color:#444;text-align:center}
+.btn{border-radius:8px;padding:5px 2px;text-align:center;font-size:10px;font-weight:700;cursor:pointer;border:1px solid #333;background:#1a1a2e;color:#444;user-select:none}
+.btn.on-yes{background:#4a9eff;color:#fff;border-color:#4a9eff}
+.btn.on-no{background:#ff6b6b;color:#fff;border-color:#ff6b6b}
+.btn.has-excl{background:#ff9f7f22;color:#ff9f7f;border-color:#ff9f7f66;min-height:28px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1px}
+.btn.no-excl{min-height:28px;display:flex;align-items:center;justify-content:center}
+.sunday-ctrl{display:flex;flex-direction:column;gap:2px}
+.sunday-lbl{font-size:9px;color:#888;text-align:center}
+.sunday-row{display:flex;align-items:center;justify-content:center;gap:2px}
+.sun-btn{width:18px;height:18px;border-radius:4px;background:#1a1a2e;border:1px solid #333;color:#aaa;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}
+.sun-cnt{font-size:13px;font-weight:700;min-width:20px;text-align:center}
+.vac-btn-wrap{margin-top:10px;text-align:center}
+.vac-btn{display:inline-block;padding:6px 20px;border-radius:20px;background:#ffd93d22;border:1px solid #ffd93d44;color:#ffd93d;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1px}
+.content{padding:16px 16px 60px;max-width:540px;margin:0 auto}
+.card{background:#13132a;border-radius:14px;padding:14px;margin-bottom:14px}
+.card-title{font-size:11px;font-weight:700;letter-spacing:2px;margin-bottom:10px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.wbtn{border:1.5px solid #ffffff11;border-radius:10px;padding:9px 4px;text-align:center;font-size:12px;color:#aaa;cursor:pointer;user-select:none;background:#1a1a2e}
+.wbtn.sel{background:#4a9eff22;border-color:#4a9eff;color:#fff;font-weight:700}
+.wbtn.my-sel{background:#ff9f7f22;border-color:#ff9f7f;color:#fff;font-weight:700}
+.hint{text-align:center;color:#444;font-size:13px;padding:16px 0}
+.sw{background:#13132a;border:1px solid #ffffff0a;border-radius:14px;overflow:hidden;margin-bottom:16px}
+.sw-hd{padding:12px 14px 8px;border-bottom:1px solid #ffffff0a;font-size:11px;color:#666;font-weight:700;letter-spacing:2px}
+.tw{overflow-x:auto;padding:8px 8px 4px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{padding:4px 6px;text-align:center;min-width:52px;background:#13132a}
+th.site-th{padding:6px 8px;color:#555;font-weight:700;text-align:left;white-space:nowrap;background:#13132a;position:sticky;left:0;z-index:2}
+td{padding:8px 4px;text-align:center;vertical-align:top;font-size:11px;font-weight:600;line-height:2}
+td.site-td{padding:8px;font-weight:700;font-size:11px;background:#13132a;position:sticky;left:0;z-index:1;border-top:1px solid #ffffff08;white-space:nowrap}
+.ref-wrap{padding:10px 14px 14px;border-top:1px solid #ffffff08}
+.ref-title{font-size:10px;color:#555;font-weight:700;letter-spacing:2px;margin-bottom:8px}
+.ref-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:3px}
+.ref-item{font-size:10px;color:#555}
+.ref-num{color:#4a9eff88;font-weight:700}
+.hl{background:#ff9f7f;color:#000;border-radius:4px;padding:0 3px;font-weight:900}
+.my-card{background:#13132a;border:1px solid #ff9f7f33;border-radius:14px;padding:14px;margin-bottom:14px}
+.my-title{font-size:11px;color:#ff9f7f;font-weight:700;letter-spacing:2px;margin-bottom:12px}
+.my-row{display:flex;flex-direction:column;gap:8px}
+.my-item{display:flex;align-items:center;gap:10px;background:#1a1a2e;border-radius:10px;padding:8px 12px}
+.my-day{font-size:12px;font-weight:700;color:#aaa;min-width:28px}
+.my-site{font-size:13px;font-weight:700}
+/* 팝업 */
+.pbg{position:fixed;top:0;left:0;right:0;bottom:0;background:#000000cc;z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.pinner{background:#13132a;border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto}
+.phead{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.pday{font-size:16px;font-weight:900;color:#fff}
+.pdate{font-size:12px;color:#555;margin-left:8px}
+.pclose{color:#555;font-size:20px;cursor:pointer;padding:0 4px}
+.phint{font-size:11px;color:#666;font-weight:700;letter-spacing:2px;margin-bottom:12px}
+/* 제외 버튼 */
+.eb{border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer;border:1.5px solid #ffffff11;background:#1a1a2e;transition:transform 0.15s}
+.eb:active{transform:scale(0.93)}
+.eb.absent{background:#ff6b6b22;border-color:#ff6b6b}
+.eb.vacation{background:#ffd93d22;border-color:#ffd93d}
+.eb.seaworld{background:#88eeff22;border-color:#88eeff}
+.eb.autovac{background:#ffd93d11;border-color:#ffd93d44;opacity:0.7}
+.en{font-size:12px;font-weight:600;color:#aaa}
+.en.absent{color:#ff6b6b}
+.en.vacation{color:#ffd93d}
+.en.seaworld{color:#88eeff}
+.en.autovac{color:#ffd93d}
+.et{font-size:10px;font-weight:700;margin-top:3px}
+.et.absent{color:#ff6b6b}
+.et.vacation{color:#ffd93d}
+.et.seaworld{color:#88eeff}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+.popping{animation:pop 0.25s ease}
+</style>
 </head>
 <body>
 <div id="app"></div>
 <script>
-const WORKERS=["이원훈","장형규","조현철","박진호","홍인석","하정남","황정호","김현진","전창범","오규종","김경훈","정철수","황인태","안찬범","김상원","이동현","김태민","김성환","김세영","홍원진","이재일","이준영","김태호","김택성","채관기","김재원","장병숙","윤광덕","박성기"];
-const N=WORKERS.length;
-const KR=["일","월","화","수","목","금","토"];
-const SITE_COLORS={daeyang:"#4a9eff",sungwoo:"#6effb4",yacha:"#ffd93d",jay:"#ff9f7f",jadoncha:"#88cc88",rest:"#888888",bibbeon:"#cccc55",exclRow:"#ff6b6b"};
-const SITE_LABELS={daeyang:"대양",sungwoo:"성우",yacha:"야차",jay:"제이",jadoncha:"자동차",rest:"나머지쉼",bibbeon:"비번",exclRow:"결근/휴가"};
-const SITE_LABELS_SUNDAY={jadoncha:"일요근무",rest:"나머지쉼",bibbeon:"비번",exclRow:"결근/휴가"};
-const SITES=["daeyang","sungwoo","yacha","jay","jadoncha","rest","bibbeon","exclRow"];
+var WORKERS=["이원훈","장형규","조현철","박진호","홍인석","하정남","황정호","김현진","전창범","오규종","김경훈","정철수","황인태","안찬범","김상원","이동현","김태민","김성환","김세영","홍원진","이재일","이준영","김태호","김택성","채관기","김재원","장병숙","윤광덕","박성기"];
+var N=WORKERS.length;
+var KR=["일","월","화","수","목","금","토"];
+var VACATION_SCHEDULE=[
+  {name:"김상원",  start:"2026-04-13",end:"2026-04-16"},
+  {name:"황정호",  start:"2026-04-20",end:"2026-04-23"},
+  {name:"하정남",  start:"2026-04-27",end:"2026-04-30"},
+  {name:"이동현",  start:"2026-05-04",end:"2026-05-07"},
+  {name:"장형규",  start:"2026-05-18",end:"2026-05-21"},
+  {name:"조현철",  start:"2026-05-26",end:"2026-05-29"},
+  {name:"홍인석",  start:"2026-06-01",end:"2026-06-04"},
+  {name:"홍원진",  start:"2026-06-15",end:"2026-06-18"},
+  {name:"이재일",  start:"2026-06-16",end:"2026-06-19"},
+  {name:"김재원",  start:"2026-06-22",end:"2026-06-25"},
+  {name:"황인태",  start:"2026-06-29",end:"2026-07-02"},
+  {name:"김성환",  start:"2026-07-06",end:"2026-07-09"},
+  {name:"오규종",  start:"2026-07-13",end:"2026-07-16"},
+  {name:"이재일",  start:"2026-07-20",end:"2026-07-23"},
+  {name:"김택성",  start:"2026-07-27",end:"2026-07-30"},
+  {name:"김세영",  start:"2026-08-03",end:"2026-08-06"},
+  {name:"정철수",  start:"2026-08-10",end:"2026-08-13"},
+  {name:"전창범",  start:"2026-08-18",end:"2026-08-21"},
+  {name:"김태민",  start:"2026-08-25",end:"2026-08-28"},
+  {name:"이준영",  start:"2026-08-31",end:"2026-09-03"},
+  {name:"채관기",  start:"2026-09-08",end:"2026-09-11"},
+  {name:"장병숙",  start:"2026-09-30",end:"2026-10-03"},
+  {name:"김경훈",  start:"2026-10-05",end:"2026-10-08"},
+  {name:"윤광덕",  start:"2026-10-28",end:"2026-10-31"},
+  {name:"안찬범",  start:"2026-11-23",end:"2026-11-26"},
+  {name:"이원훈",  start:"2026-12-07",end:"2026-12-10"},
+  {name:"김현진",  start:"2026-12-21",end:"2026-12-24"},
+  {name:"박진호",  start:"2026-12-28",end:"2026-12-31"},
+  {name:"박성기",  start:"2027-01-25",end:"2027-01-28"}
+];
 
-function getWeekDates(){const t=new Date();return Array.from({length:7},(_,i)=>{const d=new Date(t);d.setDate(t.getDate()+i);return`${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}`;});}
-function getWeekDays(){const t=new Date();return Array.from({length:7},(_,i)=>{const d=new Date(t);d.setDate(t.getDate()+i);return KR[d.getDay()];});}
-function fmtToday(){const t=new Date();return`${t.getFullYear()}.${String(t.getMonth()+1).padStart(2,"0")}.${String(t.getDate()).padStart(2,"0")}`;}
-
-function pickForward(count,startIdx,excl){const team=[];let cur=((startIdx%N)+N)%N;while(team.length<count){const name=WORKERS[cur];cur=(cur+1)%N;if(!excl.includes(name))team.push(name);}return{team,nextCursor:cur};}
-function pickReverse(count,fromIdx,excl){const team=[];let cur=((fromIdx%N)+N)%N;while(team.length<count){const name=WORKERS[cur];if(!excl.includes(name))team.push(name);cur=((cur-1)+N)%N;}return{team:[...team].reverse(),nextIdx:cur};}
-function insertByOrder(arr,name){const idx=WORKERS.indexOf(name);let ip=arr.length;for(let i=0;i<arr.length;i++){if(WORKERS.indexOf(arr[i])>idx){ip=i;break;}}arr.splice(ip,0,name);}
+function getWeekDates(){
+  var t=new Date(),r=[];
+  for(var i=0;i<7;i++){var d=new Date(t);d.setDate(t.getDate()+i);r.push(pad(d.getMonth()+1)+"."+pad(d.getDate()));}
+  return r;
+}
+function getWeekDays(){
+  var t=new Date(),r=[];
+  for(var i=0;i<7;i++){var d=new Date(t);d.setDate(t.getDate()+i);r.push(KR[d.getDay()]);}
+  return r;
+}
+function getWeekDateObjs(){
+  var t=new Date(),r=[];
+  for(var i=0;i<7;i++){var d=new Date(t);d.setDate(t.getDate()+i);d.setHours(0,0,0,0);r.push(d);}
+  return r;
+}
+function pad(n){return n<10?"0"+n:""+n;}
+function fmtToday(){var t=new Date();return t.getFullYear()+"."+pad(t.getMonth()+1)+"."+pad(t.getDate());}
+function fmtVacDate(s){var d=new Date(s+"T00:00:00");return(d.getMonth()+1)+"/"+d.getDate()+"("+KR[d.getDay()]+")";}
 function toNum(name){return WORKERS.indexOf(name)+1;}
 
-function calcWeekSchedule(carDays,dayExcludes,firstWorker,sundayCount,weekDays){
-  const firstIdx=WORKERS.indexOf(firstWorker);
-  const initBibbeon=pickReverse(6,(firstIdx-1+N)%N,[]).team;
-  let cursor=firstIdx,prevDaeyang=initBibbeon,prevSungwoo=[],prevYacha=[],prevActualBibbeon=initBibbeon;
-  const result=[];
-  for(let d=0;d<carDays.length;d++){
-    const hasCar=carDays[d],prevCar=d>0?carDays[d-1]:null;
-    const exclMap=dayExcludes[d]||{},excl=Object.keys(exclMap);
-    const avail=WORKERS.filter(w=>!excl.includes(w));
-    const bibbeon=pickReverse(6,WORKERS.indexOf(prevDaeyang[prevDaeyang.length-1]),excl).team;
-    const prevExclMap=d>0?(dayExcludes[d-1]||{}):{};
-    const absentRet=Object.keys(prevExclMap).filter(w=>prevExclMap[w]==="결근"&&!excl.includes(w));
-    const vacationRet=Object.keys(prevExclMap).filter(w=>prevExclMap[w]==="휴가"&&!excl.includes(w));
+function getAutoVac(dateObjs){
+  var r=[];
+  for(var i=0;i<7;i++){r.push({});}
+  dateObjs.forEach(function(cur,idx){
+    VACATION_SCHEDULE.forEach(function(v){
+      var s=new Date(v.start+"T00:00:00");
+      var e=new Date(v.end+"T00:00:00");
+      if(cur>=s&&cur<=e) r[idx][v.name]="휴가";
+    });
+  });
+  return r;
+}
+
+function pickFwd(count,startIdx,excl){
+  var team=[],cur=((startIdx%N)+N)%N;
+  while(team.length<count){var name=WORKERS[cur];cur=(cur+1)%N;if(excl.indexOf(name)<0)team.push(name);}
+  return {team:team,next:cur};
+}
+function pickRev(count,fromIdx,excl){
+  var team=[],cur=((fromIdx%N)+N)%N;
+  while(team.length<count){var name=WORKERS[cur];if(excl.indexOf(name)<0)team.push(name);cur=((cur-1)+N)%N;}
+  return {team:team.reverse(),next:cur};
+}
+function insertOrder(arr,name){
+  var idx=WORKERS.indexOf(name),ip=arr.length;
+  for(var i=0;i<arr.length;i++){if(WORKERS.indexOf(arr[i])>idx){ip=i;break;}}
+  arr.splice(ip,0,name);
+}
+
+function calcSchedule(carDays,dayExcl,firstWorker,sundayCount,weekDays){
+  var fi=WORKERS.indexOf(firstWorker);
+  var initBib=pickRev(6,(fi-1+N)%N,[]).team;
+  var cursor=fi,prevDae=initBib,prevSun=[],prevYac=[],prevActBib=initBib;
+  var result=[];
+  for(var d=0;d<carDays.length;d++){
+    var hasCar=carDays[d],prevCar=d>0?carDays[d-1]:null;
+    var exclMap=dayExcl[d]||{},excl=Object.keys(exclMap);
+    var avail=WORKERS.filter(function(w){return excl.indexOf(w)<0;});
+    var bib=pickRev(6,WORKERS.indexOf(prevDae[prevDae.length-1]),excl).team;
+    var prevExclMap=d>0?(dayExcl[d-1]||{}):{};
+    var absRet=Object.keys(prevExclMap).filter(function(w){return prevExclMap[w]==="결근"&&excl.indexOf(w)<0;});
+    var vacRet=Object.keys(prevExclMap).filter(function(w){return prevExclMap[w]==="휴가"&&excl.indexOf(w)<0;});
     if(hasCar){
-      let daeyang,sungwoo,yacha,jay;
+      var dae,sun,yac,jay;
       if(d===0||!prevCar){
-        const r1=pickForward(6,cursor,excl);daeyang=r1.team;
-        const r2=pickForward(4,r1.nextCursor,excl);sungwoo=r2.team;
-        const r3=pickForward(6,r2.nextCursor,excl);yacha=r3.team;
-        const r4=pickForward(4,r3.nextCursor,excl);jay=r4.team;
-        cursor=r4.nextCursor;
-      }else{
-        daeyang=[...prevSungwoo,...prevYacha.slice(0,2)].filter(w=>!excl.includes(w));
-        sungwoo=prevYacha.slice(2,6).filter(w=>!excl.includes(w));
-        const prevJay=result[d-1].jay.filter(w=>!excl.includes(w));
-        const r1=pickForward(6-prevJay.length,cursor,excl);yacha=[...prevJay,...r1.team];cursor=r1.nextCursor;
-        const r2=pickForward(4,cursor,excl);jay=r2.team;cursor=r2.nextCursor;
+        var r1=pickFwd(6,cursor,excl);dae=r1.team;
+        var r2=pickFwd(4,r1.next,excl);sun=r2.team;
+        var r3=pickFwd(6,r2.next,excl);yac=r3.team;
+        var r4=pickFwd(4,r3.next,excl);jay=r4.team;
+        cursor=r4.next;
+      } else {
+        dae=prevSun.concat(prevYac.slice(0,2)).filter(function(w){return excl.indexOf(w)<0;});
+        sun=prevYac.slice(2,6).filter(function(w){return excl.indexOf(w)<0;});
+        var pj=result[d-1].jay.filter(function(w){return excl.indexOf(w)<0;});
+        var r1=pickFwd(6-pj.length,cursor,excl);yac=pj.concat(r1.team);cursor=r1.next;
+        var r2=pickFwd(4,cursor,excl);jay=r2.team;cursor=r2.next;
       }
-      for(const ret of absentRet){if(daeyang.includes(ret))daeyang=daeyang.filter(w=>w!==ret);}
-      for(const ret of vacationRet){
-        insertByOrder(yacha,ret);
-        if(yacha.length>6){const pushed=yacha.splice(6,1)[0];insertByOrder(jay,pushed);if(jay.length>4)jay.splice(4,1);}
-      }
-      const assigned=[...daeyang,...sungwoo,...yacha,...jay,...bibbeon];
-      const jadoncha=avail.filter(w=>!assigned.includes(w));
-      result.push({hasCar,daeyang,sungwoo,yacha,jay,jadoncha,bibbeon,rest:[],excl:exclMap});
-      prevDaeyang=daeyang;prevSungwoo=sungwoo;prevYacha=yacha;prevActualBibbeon=bibbeon;
-    }else{
-      if(weekDays&&weekDays[d]==="일"&&sundayCount>0){
-        const lastIdx=WORKERS.indexOf(prevActualBibbeon[prevActualBibbeon.length-1]);
-        const sunday=pickReverse(sundayCount,lastIdx,excl).team;
-        const rest=avail.filter(w=>!sunday.includes(w)&&!bibbeon.includes(w));
-        result.push({hasCar,daeyang:[],sungwoo:[],yacha:[],jay:[],jadoncha:sunday,bibbeon,rest,excl:exclMap,isSunday:true});
-        prevDaeyang=[];prevSungwoo=[];prevYacha=[];prevActualBibbeon=bibbeon;
-      }else{
-        const lastIdx=WORKERS.indexOf(prevActualBibbeon[prevActualBibbeon.length-1]);
-        const rJ=pickReverse(4,lastIdx,excl),rS=pickReverse(4,rJ.nextIdx,excl),rD=pickReverse(6,rS.nextIdx,excl);
-        const jay=rJ.team,sungwoo=rS.team,daeyang=rD.team;
-        const assigned=[...daeyang,...sungwoo,...jay,...bibbeon];
-        const rest=avail.filter(w=>!assigned.includes(w));
-        result.push({hasCar,daeyang,sungwoo,yacha:[],jay,jadoncha:[],bibbeon,rest,excl:exclMap});
-        prevDaeyang=daeyang;prevSungwoo=sungwoo;prevYacha=[];prevActualBibbeon=bibbeon;
-        if(d<carDays.length-1&&carDays[d+1])cursor=(WORKERS.indexOf(daeyang[daeyang.length-1])+1)%N;
+      absRet.forEach(function(ret){if(dae.indexOf(ret)>=0)dae=dae.filter(function(w){return w!==ret;});});
+      vacRet.forEach(function(ret){
+        insertOrder(yac,ret);
+        if(yac.length>6){var pushed=yac.splice(6,1)[0];insertOrder(jay,pushed);if(jay.length>4)jay.splice(4,1);}
+      });
+      var assigned=dae.concat(sun,yac,jay,bib);
+      var jad=avail.filter(function(w){return assigned.indexOf(w)<0;});
+      result.push({hasCar:true,dae:dae,sun:sun,yac:yac,jay:jay,jad:jad,bib:bib,rest:[],excl:exclMap});
+      prevDae=dae;prevSun=sun;prevYac=yac;prevActBib=bib;
+    } else {
+      if(d===6&&sundayCount>0&&weekDays&&weekDays[d]==="일"){
+        var li=WORKERS.indexOf(prevActBib[prevActBib.length-1]);
+        var sw=pickRev(sundayCount,li,excl).team;
+        var rest=avail.filter(function(w){return sw.indexOf(w)<0&&bib.indexOf(w)<0;});
+        result.push({hasCar:false,dae:[],sun:[],yac:[],jay:[],jad:sw,bib:bib,rest:rest,excl:exclMap,isSun:true});
+        prevDae=[];prevSun=[];prevYac=[];prevActBib=bib;
+      } else {
+        var li=WORKERS.indexOf(prevActBib[prevActBib.length-1]);
+        var rJ=pickRev(4,li,excl),rS=pickRev(4,rJ.next,excl),rD=pickRev(6,rS.next,excl);
+        var jay=rJ.team,sun=rS.team,dae=rD.team;
+        var assigned=dae.concat(sun,jay,bib);
+        var rest=avail.filter(function(w){return assigned.indexOf(w)<0;});
+        result.push({hasCar:false,dae:dae,sun:sun,yac:[],jay:jay,jad:[],bib:bib,rest:rest,excl:exclMap});
+        prevDae=dae;prevSun=sun;prevYac=[];prevActBib=bib;
+        if(d<carDays.length-1&&carDays[d+1])cursor=(WORKERS.indexOf(dae[dae.length-1])+1)%N;
       }
     }
   }
@@ -162,206 +234,399 @@ function calcWeekSchedule(carDays,dayExcludes,firstWorker,sundayCount,weekDays){
 }
 
 // State
-let state={
-  carDays:Array(7).fill(null),
-  myName:"",
-  firstWorker:"",
-  dayExcludes:Array(7).fill(null).map(()=>({})),
-  sundayCount:0,
-  popupDay:null,
+var state={
+  carDays:[null,null,null,null,null,null,false],
+  firstWorker:"",myName:localStorage.getItem('myName')||'',
+  dayExcludes:[{},{},{},{},{},{},{}],
+  sundayCount:4,
+  popupDay:null,vacPopup:false,
   weekDates:getWeekDates(),
   weekDays:getWeekDays(),
+  weekDateObjs:getWeekDateObjs()
 };
 
-function setState(patch){Object.assign(state,patch);render();}
+function setState(patch){
+  for(var k in patch)state[k]=patch[k];
+  render();
+}
+
+function h(tag,attrs,children){
+  var el=document.createElement(tag);
+  if(attrs)for(var k in attrs){
+    if(k==="className")el.className=attrs[k];
+    else if(k.startsWith("on"))el[k.toLowerCase()]=attrs[k];
+    else el.setAttribute(k,attrs[k]);
+  }
+  if(children){
+    if(typeof children==="string")el.innerHTML=children;
+    else if(Array.isArray(children))children.forEach(function(c){if(c)el.appendChild(typeof c==="string"?document.createTextNode(c):c);});
+    else el.appendChild(children);
+  }
+  return el;
+}
 
 function render(){
-  const {carDays,firstWorker,dayExcludes,sundayCount,popupDay,weekDates,weekDays,myName}=state;
-  const allSelected=carDays.every(c=>c!==null);
-  const schedule=(firstWorker&&allSelected)?calcWeekSchedule(carDays,dayExcludes,firstWorker,sundayCount,weekDays):null;
+  var wd=state.weekDates,wk=state.weekDays,cd=state.carDays;
+  var dayExcl=state.dayExcludes,sc=state.sundayCount;
+  var autoVac=getAutoVac(state.weekDateObjs);
+  var merged=dayExcl.map(function(m,i){
+    var r=Object.assign({},autoVac[i]);
+    Object.keys(m).forEach(function(k){r[k]=m[k];});
+    return r;
+  });
+  var allSel=cd.every(function(c){return c!==null;});
+  var sched=(state.firstWorker&&allSel)?calcSchedule(cd,merged,state.firstWorker,sc,wk):null;
 
-  let html=`
-  <div class="header">
-    <div class="header-title">
-      <div class="header-sub">FORKLIFT WEEKLY SCHEDULE</div>
-      <div class="header-date">오늘 · ${fmtToday()}</div>
-    </div>
-    <div class="day-row">
-      ${weekDays.map((day,idx)=>{
-        const isWeekend=day==="토"||day==="일";
-        const val=carDays[idx];
-        const exCount=Object.keys(dayExcludes[idx]).length;
-        const dayColor=isWeekend?"#ff6b6b":"#aaa";
-        return`<div class="day-col">
-          <div class="day-label" style="color:${dayColor}">${day}</div>
-          <div class="day-date">${weekDates[idx]}</div>
-          <div class="btn-car${val===true?" on-yes":""}" onclick="toggleCar(${idx},true)">있음</div>
-          <div class="btn-car${val===false?" on-no":""}" onclick="toggleCar(${idx},false)">없음</div>
-          <div class="btn-excl${exCount>0?" has-excl":""}" onclick="openPopup(${idx})">
-            <div>제외</div>${exCount>0?`<div>${exCount}명</div>`:""}
-          </div>
-          ${day==="일"?`<div class="sunday-ctrl">
-            <div class="sunday-label">인원</div>
-            <div class="sunday-btns">
-              <div class="sunday-btn" onclick="changeSunday(-1)">-</div>
-              <div class="sunday-count" style="color:${sundayCount>0?"#ffd93d":"#555"}">${sundayCount}</div>
-              <div class="sunday-btn" onclick="changeSunday(1)">+</div>
-            </div>
-          </div>`:""}
-        </div>`;
-      }).join("")}
-    </div>
-  </div>
-  <div class="content">
-    <div class="card" style="border-color:#ff9f7f22">
-      <div class="card-title" style="color:#ff9f7f">▪ 내 이름 선택</div>
-      <div class="my-name-grid">
-        ${WORKERS.map(name=>`<div class="my-name-btn${myName===name?" selected":""}" onclick="selectMyName('${name}')">${name}</div>`).join("")}
-      </div>
-    </div>
-    <div class="card" style="border-color:#4a9eff22">
-      <div class="card-title" style="color:#4a9eff">▪ 오늘 대양 · 1번 선택</div>
-      <div class="worker-grid">
-        ${WORKERS.map(name=>`<div class="worker-btn${firstWorker===name?" selected":""}" onclick="selectWorker('${name}')">${name}</div>`).join("")}
-      </div>
-    </div>
-    ${!schedule?`<div class="hint">${!allSelected?"📅 모든 날 차 유무를 선택해주세요":"👆 오늘 대양 1번을 선택해주세요"}</div>`:""}
-    ${myName&&schedule?renderMySchedule(myName,schedule,weekDays,weekDates):""}
-    ${schedule?renderSchedule(schedule,weekDays,weekDates,carDays,dayExcludes,myName):""}
-  </div>
-  ${popupDay!==null?renderPopup(popupDay,weekDays,weekDates,dayExcludes):""}
-  `;
-  document.getElementById("app").innerHTML=html;
+  var app=document.getElementById("app");
+  app.innerHTML="";
+
+  // HEADER
+  var hdr=h("div",{className:"header"});
+  var htitle=h("div",{className:"header-title"});
+  htitle.appendChild(h("div",{className:"header-sub"},"FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v2.2</span>"));
+  htitle.appendChild(h("div",{className:"header-date"},"오늘 · "+fmtToday()));
+  hdr.appendChild(htitle);
+
+  var dayRow=h("div",{className:"day-row"});
+  wk.forEach(function(day,idx){
+    var isWe=day==="토"||day==="일";
+    var val=cd[idx];
+    var exCount=Object.keys(merged[idx]).length;
+    var col=h("div",{className:"day-col"});
+    col.appendChild(h("div",{className:"day-label",style:"color:"+(isWe?"#ff6b6b":"#aaa")},day));
+    col.appendChild(h("div",{className:"day-date"},wd[idx]));
+    var btnY=h("div",{className:"btn"+(val===true?" on-yes":"")},"있음");
+    btnY.onclick=function(){toggleCar(idx,true);};
+    col.appendChild(btnY);
+    var btnN=h("div",{className:"btn"+(val===false?" on-no":"")},"없음");
+    btnN.onclick=function(){toggleCar(idx,false);};
+    col.appendChild(btnN);
+    var btnE=h("div",{className:"btn"+(exCount>0?" has-excl":" no-excl")});
+    btnE.innerHTML=exCount>0?"제외<br>"+exCount+"명":"제외";
+    btnE.onclick=function(){setState({popupDay:idx});};
+    col.appendChild(btnE);
+    if(day==="일"){
+      var sc2=h("div",{className:"sunday-ctrl"});
+      sc2.appendChild(h("div",{className:"sunday-lbl"},"인원"));
+      var sr=h("div",{className:"sunday-row"});
+      var bm=h("div",{className:"sun-btn"},"-");
+      bm.onclick=function(){setState({sundayCount:Math.max(0,state.sundayCount-1)});};
+      var cnt=h("div",{className:"sun-cnt",style:"color:"+(sc>0?"#ffd93d":"#555")},String(sc));
+      var bp=h("div",{className:"sun-btn"},"+" );
+      bp.onclick=function(){setState({sundayCount:Math.min(29,state.sundayCount+1)});};
+      sr.appendChild(bm);sr.appendChild(cnt);sr.appendChild(bp);
+      sc2.appendChild(sr);
+      col.appendChild(sc2);
+    }
+    dayRow.appendChild(col);
+  });
+  hdr.appendChild(dayRow);
+
+  var vb=h("div",{className:"vac-btn-wrap"});
+  var vbtn=h("div",{className:"vac-btn"},"📋 연간 휴가 리스트");
+  vbtn.onclick=function(){setState({vacPopup:true});};
+  vb.appendChild(vbtn);
+  hdr.appendChild(vb);
+  app.appendChild(hdr);
+
+  // CONTENT
+  var cont=h("div",{className:"content"});
+
+  // 내 이름 선택
+  var myCard=h("div",{className:"card",style:"border:1px solid #ff9f7f22"});
+  myCard.appendChild(h("div",{className:"card-title",style:"color:#ff9f7f"},"▪ 내 이름 선택"));
+  var myGrid=h("div",{className:"grid4"});
+  WORKERS.forEach(function(name){
+    var btn=h("div",{className:"wbtn"+(state.myName===name?" my-sel":"")},name);
+    btn.onclick=function(){selectMyName(name);};
+    myGrid.appendChild(btn);
+  });
+  myCard.appendChild(myGrid);
+  cont.appendChild(myCard);
+
+  // 대양 1번 선택
+  var d1Card=h("div",{className:"card",style:"border:1px solid #4a9eff22"});
+  d1Card.appendChild(h("div",{className:"card-title",style:"color:#4a9eff"},"▪ 오늘 대양 · 1번 선택"));
+  var d1Grid=h("div",{className:"grid4"});
+  WORKERS.forEach(function(name){
+    var btn=h("div",{className:"wbtn"+(state.firstWorker===name?" sel":"")},name);
+    btn.onclick=function(){setState({firstWorker:state.firstWorker===name?"":name});};
+    d1Grid.appendChild(btn);
+  });
+  d1Card.appendChild(d1Grid);
+  cont.appendChild(d1Card);
+
+  if(!sched){
+    cont.appendChild(h("div",{className:"hint"},allSel?"👆 오늘 대양 1번을 선택해주세요":"📅 모든 날 차 유무를 선택해주세요"));
+  }
+
+  // 내 주간 근무
+  if(sched&&state.myName){
+    cont.appendChild(renderMySchedule(sched,wk,wd));
+  }
+
+  // 근무표
+  if(sched){
+    cont.appendChild(renderTable(sched,wk,wd,cd,merged));
+  }
+
+  app.appendChild(cont);
+
+  // 팝업
+  if(state.popupDay!==null){
+    app.appendChild(renderPopup(state.popupDay,wk,wd,merged,dayExcl));
+  }
+  if(state.vacPopup){
+    app.appendChild(renderVacPopup());
+  }
 }
 
-function renderSchedule(schedule,weekDays,weekDates,carDays,dayExcludes,myName){
-  const thead=`<tr>
-    <th class="site-th">현장</th>
-    ${weekDays.map((day,idx)=>{
-      const isWeekend=day==="토"||day==="일";
-      const exCount=Object.keys(dayExcludes[idx]).length;
-      return`<th>
-        <div class="day-name" style="color:${isWeekend?"#ff6b6b":"#aaa"}">${day}</div>
-        <div class="day-date2">${weekDates[idx]}</div>
-        <div class="car-status" style="color:${carDays[idx]?"#4a9eff":"#ff6b6b"}">${carDays[idx]?"차O":"차X"}</div>
-        ${exCount>0?`<div class="excl-count">제외${exCount}</div>`:""}
-      </th>`;
-    }).join("")}
-  </tr>`;
+var SITES=[
+  {key:"dae",  label:"대양",   color:"#4a9eff"},
+  {key:"sun",  label:"성우",   color:"#6effb4"},
+  {key:"yac",  label:"야차",   color:"#ffd93d"},
+  {key:"jay",  label:"제이",   color:"#ff9f7f"},
+  {key:"jad",  label:"자동차", color:"#88cc88"},
+  {key:"rest", label:"나머지쉼",color:"#888888"},
+  {key:"bib",  label:"비번",   color:"#cccc55"},
+  {key:"excl", label:"결근/휴가",color:"#ff6b6b"}
+];
 
-  const tbody=SITES.map(key=>{
-    const color=SITE_COLORS[key];
-    const label=SITE_LABELS[key];
-    const isSundayCol=schedule.map(d=>d.isSunday);
-    const cells=schedule.map((day,idx)=>{
-      const bg=idx%2===0?"#0f0f1a":"#111120";
-      if(day.isSunday){
-        if(key==="jadoncha"){const m=day.jadoncha||[];return`<td style="background:${bg};color:#ffd93d">${m.map(toNum).join(" ")}</td>`;}
-        if(key==="rest"){const m=day.rest||[];return`<td style="background:${bg};color:#888">${m.length>0?m.map(toNum).join(" "):"-"}</td>`;}
-        if(key==="bibbeon"){const m=day.bibbeon||[];return`<td style="background:${bg};color:#cccc55">${m.length>0?m.map(toNum).join(" "):"-"}</td>`;}
-        if(key==="exclRow"){const e=Object.entries(day.excl||{});return`<td style="background:${bg}">${e.length===0?`<span style="color:#2a2a3a">-</span>`:e.map(([n,t])=>`<span style="display:block;font-size:10px;line-height:1.8;color:${t==="결근"?"#ff6b6b":"#ffd93d"};font-weight:700">${toNum(n)}${t==="결근"?"결":"휴"}</span>`).join("")}</td>`;}
-        return`<td style="background:${bg};color:#2a2a3a">-</td>`;
+function renderTable(sched,wk,wd,cd,merged){
+  var wrap=h("div",{className:"sw"});
+  wrap.appendChild(h("div",{className:"sw-hd"},"▪ 주간 근무표"));
+  var tw=h("div",{className:"tw"});
+  var tbl=document.createElement("table");
+
+  // thead
+  var thead=document.createElement("thead");
+  var tr=document.createElement("tr");
+  tr.appendChild(h("th",{className:"site-th"},"현장"));
+  wk.forEach(function(day,idx){
+    var isWe=day==="토"||day==="일";
+    var th=document.createElement("th");
+    var exC=Object.keys(merged[idx]).length;
+    var inner="<div style='color:"+(isWe?"#ff6b6b":"#aaa")+";font-weight:900;font-size:13px'>"+day+"</div>";
+    inner+="<div style='color:#444;font-size:9px'>"+wd[idx]+"</div>";
+    inner+="<div style='font-size:9px;font-weight:700;color:"+(cd[idx]?"#4a9eff":"#ff6b6b")+"'>"+(cd[idx]?"차O":"차X")+"</div>";
+    if(exC>0)inner+="<div style='font-size:9px;color:#ff9f7f;font-weight:700'>제외"+exC+"</div>";
+    th.innerHTML=inner;
+    tr.appendChild(th);
+  });
+  thead.appendChild(tr);
+  tbl.appendChild(thead);
+
+  // tbody
+  var tbody=document.createElement("tbody");
+  SITES.forEach(function(site){
+    var row=document.createElement("tr");
+    var tdl=h("td",{className:"site-td",style:"color:"+site.color},site.label);
+    row.appendChild(tdl);
+    sched.forEach(function(day,idx){
+      var bg=idx%2===0?"#0f0f1a":"#111120";
+      var td=document.createElement("td");
+      td.style.background=bg;
+      td.style.borderTop="1px solid #ffffff08";
+
+      if(site.key==="excl"){
+        var entries=Object.entries(day.excl||{});
+        if(entries.length===0){td.innerHTML="<span style='color:#2a2a3a'>-</span>";}
+        else{
+          var html="";
+          entries.forEach(function(pair){
+            var t=pair[1];
+            html+="<span style='display:block;font-size:10px;line-height:1.8;color:"+(t==="결근"?"#ff6b6b":"#ffd93d")+";font-weight:700'>"+toNum(pair[0])+(t==="결근"?"결":"휴")+"</span>";
+          });
+          td.innerHTML=html;
+        }
+        row.appendChild(td);return;
       }
-      if(key==="exclRow"){const e=Object.entries(day.excl||{});return`<td style="background:${bg}">${e.length===0?`<span style="color:#2a2a3a">-</span>`:e.map(([n,t])=>`<span style="display:block;font-size:10px;line-height:1.8;color:${t==="결근"?"#ff6b6b":"#ffd93d"};font-weight:700">${toNum(n)}${t==="결근"?"결":"휴"}</span>`).join("")}</td>`;}
-      const isEmpty=(key==="yacha"&&!day.hasCar)||(key==="rest"&&day.hasCar)||(key==="jadoncha"&&!day.hasCar);
-      const members=day[key]||[];
-      if(isEmpty||members.length===0)return`<td style="background:${bg};color:#2a2a3a">-</td>`;
-      const myNum=myName?toNum(myName):null;
-      const cellContent=members.map(n=>{
-        const num=toNum(n);
-        if(myName&&n===myName)return`<span class="highlight-num">${num}</span>`;
-        return num;
-      }).join(" ");
-      return`<td style="background:${bg};color:${color}">${cellContent}</td>`;
-    }).join("");
-    const dynLabel=(key==="jadoncha"&&isSundayCol.some(b=>b))?"자동차/일요근무":label;
-    return`<tr><td class="site-label" style="color:${color}">${dynLabel}</td>${cells}</tr>`;
-  }).join("");
 
-  const refGrid=WORKERS.map((name,i)=>`<div class="ref-item"><span class="ref-num">${i+1}</span> ${name}</div>`).join("");
+      if(day.isSun){
+        if(site.key==="jad"){
+          var m=day.jad||[];
+          td.style.color="#ffd93d";
+          td.innerHTML=m.map(toNum).join(" ")||"-";
+        } else if(site.key==="rest"){
+          var m=day.rest||[];
+          td.style.color="#888";
+          td.innerHTML=m.length>0?m.map(toNum).join(" "):"-";
+        } else if(site.key==="bib"){
+          var m=day.bib||[];
+          td.style.color="#cccc55";
+          td.innerHTML=m.length>0?m.map(toNum).join(" "):"-";
+        } else {
+          td.innerHTML="<span style='color:#2a2a3a'>-</span>";
+        }
+        row.appendChild(td);return;
+      }
 
-  return`<div class="schedule-wrap">
-    <div class="schedule-header">▪ 주간 근무표</div>
-    <div class="table-wrap"><table><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>
-    <div class="ref-wrap"><div class="ref-title">▪ 번호 참고</div><div class="ref-grid">${refGrid}</div></div>
-  </div>`;
+      var isEmpty=(site.key==="yac"&&!day.hasCar)||(site.key==="rest"&&day.hasCar)||(site.key==="jad"&&!day.hasCar);
+      var members=day[site.key]||[];
+      if(isEmpty||members.length===0){
+        td.innerHTML="<span style='color:#2a2a3a'>-</span>";
+      } else {
+        td.style.color=site.color;
+        var html="";
+        members.forEach(function(n){
+          var num=toNum(n);
+          if(state.myName&&n===state.myName) html+="<span class='hl'>"+num+"</span> ";
+          else html+=num+" ";
+        });
+        td.innerHTML=html.trim();
+      }
+      row.appendChild(td);
+    });
+    tbody.appendChild(row);
+  });
+  tbl.appendChild(tbody);
+  tw.appendChild(tbl);
+  wrap.appendChild(tw);
+
+  // 번호 참고
+  var ref=h("div",{className:"ref-wrap"});
+  ref.appendChild(h("div",{className:"ref-title"},"▪ 번호 참고"));
+  var rg=h("div",{className:"ref-grid"});
+  WORKERS.forEach(function(name,i){
+    var item=document.createElement("div");
+    item.className="ref-item";
+    item.innerHTML="<span class='ref-num'>"+(i+1)+"</span> "+name;
+    rg.appendChild(item);
+  });
+  ref.appendChild(rg);
+  wrap.appendChild(ref);
+  return wrap;
 }
 
-function renderPopup(idx,weekDays,weekDates,dayExcludes){
-  const excludes=dayExcludes[idx];
-  const workers=WORKERS.map(name=>{
-    const status=excludes[name];
-    return`<div class="excl-btn${status==="결근"?" absent":status==="휴가"?" vacation":""}" onclick="toggleExcl(${idx},'${name}')">
-      <div class="excl-name${status==="결근"?" absent":status==="휴가"?" vacation":""}">${name}</div>
-      ${status?`<div class="excl-type ${status==="결근"?"absent":"vacation"}">${status}</div>`:""}
-    </div>`;
-  }).join("");
-  return`<div class="popup-bg" onclick="closePopup()">
-    <div class="popup-inner" onclick="event.stopPropagation()">
-      <div class="popup-head">
-        <div><span class="popup-day-name">${weekDays[idx]}요일</span><span class="popup-date">${weekDates[idx]}</span></div>
-        <div class="popup-close" onclick="closePopup()">✕</div>
-      </div>
-      <div class="popup-hint">▪ 제외 인원 (탭: 없음→결근→휴가→없음)</div>
-      <div class="worker-excl-grid">${workers}</div>
-    </div>
-  </div>`;
-}
-
-function renderMySchedule(myName,schedule,weekDays,weekDates){
-  const SITE_KR={daeyang:"대양",sungwoo:"성우",yacha:"야차",jay:"제이",jadoncha:"자동차",rest:"나머지쉼",bibbeon:"비번"};
-  const SITE_COLOR={daeyang:"#4a9eff",sungwoo:"#6effb4",yacha:"#ffd93d",jay:"#ff9f7f",jadoncha:"#88cc88",rest:"#888",bibbeon:"#cccc55"};
-  const rows=schedule.map((day,idx)=>{
-    let site="",color="#aaa";
-    if(day.isSunday){
-      if((day.jadoncha||[]).includes(myName)){
-        const pos=(day.jadoncha||[]).indexOf(myName)+1;
-        site=`일요근무(${pos}번)`;color="#ffd93d";
-      } else if((day.bibbeon||[]).includes(myName)){site="비번";color="#cccc55";}
-      else if((day.rest||[]).includes(myName)){site="쉬는날";color="#888";}
+function renderMySchedule(sched,wk,wd){
+  var name=state.myName;
+  var card=h("div",{className:"my-card"});
+  card.appendChild(h("div",{className:"my-title"},"▪ "+name+" · 내 주간 근무"));
+  var rows=h("div",{className:"my-row"});
+  var LABELS={dae:"대양",sun:"성우",yac:"야차",jay:"제이",jad:"자동차",rest:"나머지쉼",bib:"비번"};
+  var COLORS={dae:"#4a9eff",sun:"#6effb4",yac:"#ffd93d",jay:"#ff9f7f",jad:"#88cc88",rest:"#888",bib:"#cccc55"};
+  sched.forEach(function(day,idx){
+    var site="",color="#aaa",pos=0;
+    if(day.isSun){
+      if((day.jad||[]).indexOf(name)>=0){pos=(day.jad||[]).indexOf(name)+1;site="일요근무("+pos+"번)";color="#ffd93d";}
+      else if((day.bib||[]).indexOf(name)>=0){site="비번";color="#cccc55";}
+      else if((day.rest||[]).indexOf(name)>=0){site="쉬는날";color="#888";}
       else site="미배정";
     } else {
-      const labels={daeyang:"대양",sungwoo:"성우",yacha:"야차",jay:"제이",jadoncha:"자동차",rest:"나머지쉼",bibbeon:"비번"};
-      const colors={daeyang:"#4a9eff",sungwoo:"#6effb4",yacha:"#ffd93d",jay:"#ff9f7f",jadoncha:"#88cc88",rest:"#888",bibbeon:"#cccc55"};
-      const noPos=["jadoncha","rest","bibbeon"];
-      for(const key of ["daeyang","sungwoo","yacha","jay","jadoncha","bibbeon","rest"]){
-        const arr=day[key]||[];
-        if(arr.includes(myName)){
-          const pos=arr.indexOf(myName)+1;
-          site=noPos.includes(key)?labels[key]:`${labels[key]}(${pos}번)`;
-          color=colors[key];break;
+      var NOPOS=["jad","rest","bib"];
+      var keys=["dae","sun","yac","jay","jad","bib","rest"];
+      for(var ki=0;ki<keys.length;ki++){
+        var k=keys[ki];
+        var arr=day[k]||[];
+        if(arr.indexOf(name)>=0){
+          pos=arr.indexOf(name)+1;
+          site=NOPOS.indexOf(k)>=0?LABELS[k]:LABELS[k]+"("+pos+"번)";
+          color=COLORS[k];break;
         }
       }
       if(!site)site="미배정";
     }
-    const isWeekend=weekDays[idx]==="토"||weekDays[idx]==="일";
-    return`<div class="my-day-item">
-      <div class="my-day-label" style="color:${isWeekend?"#ff6b6b":"#aaa"}">${weekDays[idx]}<br><span style="font-size:9px;color:#444">${weekDates[idx]}</span></div>
-      <div class="my-day-site" style="color:${color}">${site}</div>
-    </div>`;
-  }).join("");
-  return`<div class="my-schedule">
-    <div class="my-schedule-title">▪ ${myName} · 내 주간 근무</div>
-    <div class="my-day-row">${rows}</div>
-  </div>`;
+    var isWe=wk[idx]==="토"||wk[idx]==="일";
+    var item=h("div",{className:"my-item"});
+    var dayEl=h("div",{className:"my-day",style:"color:"+(isWe?"#ff6b6b":"#aaa")});
+    dayEl.innerHTML=wk[idx]+"<br><span style='font-size:9px;color:#444'>"+wd[idx]+"</span>";
+    item.appendChild(dayEl);
+    item.appendChild(h("div",{className:"my-site",style:"color:"+color},site));
+    rows.appendChild(item);
+  });
+  card.appendChild(rows);
+  return card;
 }
 
-// Actions
-function toggleCar(idx,val){const c=[...state.carDays];c[idx]=c[idx]===val?null:val;setState({carDays:c});}
-function selectWorker(name){setState({firstWorker:state.firstWorker===name?"":name});}
-function changeSunday(delta){setState({sundayCount:Math.max(0,Math.min(29,state.sundayCount+delta))});}
-function openPopup(idx){setState({popupDay:idx});}
-function closePopup(){setState({popupDay:null});}
-function selectMyName(name){setState({myName:state.myName===name?"":name});}
+function renderPopup(idx,wk,wd,merged,dayExcl){
+  var bg=h("div",{className:"pbg"});
+  bg.onclick=function(){setState({popupDay:null});};
+  var inner=h("div",{className:"pinner"});
+  inner.onclick=function(e){e.stopPropagation();};
+  var phead=h("div",{className:"phead"});
+  var ptitle=document.createElement("div");
+  ptitle.innerHTML="<span class='pday'>"+wk[idx]+"요일</span><span class='pdate'>"+wd[idx]+"</span>";
+  var pclose=h("div",{className:"pclose"},"✕");
+  pclose.onclick=function(){setState({popupDay:null});};
+  phead.appendChild(ptitle);phead.appendChild(pclose);
+  inner.appendChild(phead);
+  inner.appendChild(h("div",{className:"phint"},"▪ 제외 인원 (탭: 없음→결근→휴가→씨월드→없음)"));
+  var grid=h("div",{className:"grid3"});
+  WORKERS.forEach(function(name){
+    var manual=(dayExcl[idx]||{})[name];
+    var isAuto=!manual&&!!(merged[idx]||{})[name];
+    var btnCls="eb"+(manual==="결근"?" absent":manual==="휴가"?" vacation":manual==="씨월드"?" seaworld":isAuto?" autovac":"");
+    var nameCls="en"+(manual==="결근"?" absent":manual==="휴가"?" vacation":manual==="씨월드"?" seaworld":isAuto?" autovac":"");
+    var typeCls="et "+(manual==="결근"?"absent":manual==="씨월드"?"seaworld":"vacation");
+    var showType=manual||(isAuto?"휴가(자동)":"");
+    var btn=h("div",{className:btnCls});
+    btn.appendChild(h("div",{className:nameCls},name));
+    if(showType){btn.appendChild(h("div",{className:typeCls},showType));}
+    btn.onclick=function(){
+      btn.classList.remove("popping");
+      void btn.offsetWidth;
+      btn.classList.add("popping");
+      toggleExcl(idx,name);
+    };
+    grid.appendChild(btn);
+  });
+  inner.appendChild(grid);
+  bg.appendChild(inner);
+  return bg;
+}
+
+function renderVacPopup(){
+  var today=new Date();today.setHours(0,0,0,0);
+  var bg=h("div",{className:"pbg"});
+  bg.onclick=function(){setState({vacPopup:false});};
+  var inner=h("div",{className:"pinner"});
+  inner.onclick=function(e){e.stopPropagation();};
+  var phead=h("div",{className:"phead"});
+  var ptitle=h("div",{className:"pday"},"📋 연간 휴가 리스트");
+  var pclose=h("div",{className:"pclose"},"✕");
+  pclose.onclick=function(){setState({vacPopup:false});};
+  phead.appendChild(ptitle);phead.appendChild(pclose);
+  inner.appendChild(phead);
+  VACATION_SCHEDULE.forEach(function(v){
+    var s=new Date(v.start+"T00:00:00"),e=new Date(v.end+"T00:00:00");
+    var isActive=today>=s&&today<=e,isPast=today>e;
+    var color=isActive?"#ffd93d":isPast?"#444":"#aaa";
+    var row=document.createElement("div");
+    row.style.cssText="display:flex;align-items:center;padding:8px 0;border-bottom:1px solid #ffffff08";
+    var nameEl=document.createElement("div");
+    nameEl.style.cssText="min-width:56px;font-size:13px;font-weight:700;color:"+color;
+    nameEl.textContent=v.name;
+    if(isActive){var badge=document.createElement("span");badge.style.cssText="font-size:9px;background:#ffd93d33;color:#ffd93d;border-radius:4px;padding:1px 5px;margin-left:6px";badge.textContent="휴가중";nameEl.appendChild(badge);}
+    var dateEl=document.createElement("div");
+    dateEl.style.cssText="font-size:11px;color:"+(isPast?"#444":"#888")+";margin-left:8px";
+    dateEl.textContent=fmtVacDate(v.start)+" ~ "+fmtVacDate(v.end);
+    row.appendChild(nameEl);row.appendChild(dateEl);
+    inner.appendChild(row);
+  });
+  bg.appendChild(inner);
+  return bg;
+}
+
+function selectMyName(name){
+  var newName=state.myName===name?"":name;
+  localStorage.setItem('myName',newName);
+  setState({myName:newName});
+}
+function toggleCar(idx,val){
+  var c=state.carDays.slice();
+  c[idx]=c[idx]===val?null:val;
+  setState({carDays:c});
+}
 function toggleExcl(idx,name){
-  const d=state.dayExcludes.map((e,i)=>{
+  var d=state.dayExcludes.map(function(e,i){
     if(i!==idx)return e;
-    const updated={...e};
-    const cur=updated[name];
-    if(!cur)updated[name]="결근";
-    else if(cur==="결근")updated[name]="휴가";
-    else delete updated[name];
-    return updated;
+    var u=Object.assign({},e);
+    var cur=u[name];
+    if(!cur)u[name]="결근";
+    else if(cur==="결근")u[name]="휴가";
+    else if(cur==="휴가")u[name]="씨월드";
+    else delete u[name];
+    return u;
   });
   setState({dayExcludes:d});
 }
