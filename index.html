@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>지게차 주간 근무표</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#0d0d1a;color:#e0e0f0;font-family:'Noto Sans KR',sans-serif;min-height:100vh}
+    ::-webkit-scrollbar{width:4px;height:4px}
+    ::-webkit-scrollbar-thumb{background:#333;border-radius:4px}
+    .header{background:linear-gradient(135deg,#0d0d1a 0%,#1a1a3e 100%);border-bottom:1px solid #ffffff11;padding:20px 16px 16px}
+    .header-title{text-align:center;margin-bottom:14px}
+    .header-sub{color:#4a9eff88;font-size:11px;letter-spacing:3px;font-weight:700;margin-bottom:2px}
+    .header-date{font-size:13px;color:#888}
+    .day-row{display:flex;gap:4px}
+    .day-col{flex:1;display:flex;flex-direction:column;gap:4px}
+    .day-label{font-size:12px;font-weight:700;text-align:center}
+    .day-date{font-size:9px;color:#444;text-align:center}
+    .btn-car{border-radius:8px;padding:5px 2px;text-align:center;font-size:10px;font-weight:700;cursor:pointer;border:1px solid #333;background:#1a1a2e;color:#444}
+    .btn-car.on-yes{background:#4a9eff;color:#fff;border-color:#4a9eff}
+    .btn-car.on-no{background:#ff6b6b;color:#fff;border-color:#ff6b6b}
+    .btn-excl{border-radius:8px;padding:5px 2px;text-align:center;font-size:10px;font-weight:700;cursor:pointer;border:1px solid #333;background:#1a1a2e;color:#444;min-height:28px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1px}
+    .btn-excl.has-excl{background:#ff9f7f22;color:#ff9f7f;border-color:#ff9f7f66}
+    .sunday-ctrl{display:flex;flex-direction:column;gap:2px}
+    .sunday-label{font-size:9px;color:#888;text-align:center}
+    .sunday-btns{display:flex;align-items:center;justify-content:center;gap:2px}
+    .sunday-btn{width:18px;height:18px;border-radius:4px;background:#1a1a2e;border:1px solid #333;color:#aaa;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}
+    .sunday-count{font-size:11px;font-weight:700;min-width:16px;text-align:center}
+    .content{padding:16px 16px 0;max-width:540px;margin:0 auto;padding-bottom:60px}
+    .card{background:#13132a;border:1px solid #ffffff0a;border-radius:14px;padding:14px;margin-bottom:14px}
+    .card-title{font-size:11px;font-weight:700;letter-spacing:2px;margin-bottom:10px}
+    .worker-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+    .worker-btn{border:1.5px solid #ffffff11;border-radius:10px;padding:9px 4px;text-align:center;font-size:12px;font-weight:400;color:#aaa;cursor:pointer;user-select:none;background:#1a1a2e}
+    .worker-btn.selected{background:#4a9eff22;border-color:#4a9eff;color:#fff;font-weight:700}
+    .hint{text-align:center;color:#444;font-size:13px;padding:16px 0}
+    .schedule-wrap{background:#13132a;border:1px solid #ffffff0a;border-radius:14px;overflow:hidden;margin-bottom:16px}
+    .schedule-header{padding:12px 14px 8px;border-bottom:1px solid #ffffff0a;font-size:11px;color:#666;font-weight:700;letter-spacing:2px}
+    .table-wrap{overflow-x:auto;padding:8px 8px 4px}
+    table{width:100%;border-collapse:collapse;font-size:11px}
+    th{padding:4px 6px;text-align:center;min-width:52px;background:#13132a}
+    th .day-name{font-weight:900;font-size:13px}
+    th .day-date2{color:#444;font-size:9px}
+    th .car-status{font-size:9px;font-weight:700}
+    th .excl-count{font-size:9px;color:#ff9f7f;font-weight:700}
+    td{padding:8px 4px;text-align:center;vertical-align:top;font-size:11px;font-weight:600;line-height:2}
+    td.site-label{padding:8px;font-weight:700;font-size:11px;background:#13132a;position:sticky;left:0;z-index:1;border-top:1px solid #ffffff08;white-space:nowrap}
+    th.site-th{padding:6px 8px;color:#555;font-weight:700;text-align:left;white-space:nowrap;background:#13132a;position:sticky;left:0;z-index:2}
+    .ref-wrap{padding:10px 14px 14px;border-top:1px solid #ffffff08}
+    .ref-title{font-size:10px;color:#555;font-weight:700;letter-spacing:2px;margin-bottom:8px}
+    .ref-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:3px}
+    .ref-item{font-size:10px;color:#555}
+    .ref-num{color:#4a9eff88;font-weight:700}
+    /* 팝업 */
+    .popup-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:#000000cc;z-index:200;display:flex;align-items:flex-end;justify-content:center}
+    .popup-inner{background:#13132a;border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto}
+    .popup-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+    .popup-day-name{font-size:16px;font-weight:900;color:#fff}
+    .popup-date{font-size:12px;color:#555;margin-left:8px}
+    .popup-close{color:#555;font-size:20px;cursor:pointer;padding:0 4px}
+    .popup-hint{font-size:11px;color:#666;font-weight:700;letter-spacing:2px;margin-bottom:12px}
+    .worker-excl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .excl-btn{border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer;border:1.5px solid #ffffff11;background:#1a1a2e}
+    .excl-btn.absent{background:#ff6b6b22;border-color:#ff6b6b}
+    .excl-btn.vacation{background:#ffd93d22;border-color:#ffd93d}
+    .excl-name{font-size:12px;font-weight:600;color:#aaa}
+    .excl-name.absent{color:#ff6b6b}
+    .excl-name.vacation{color:#ffd93d}
+    .excl-type{font-size:10px;font-weight:700;margin-top:3px}
+    .excl-type.absent{color:#ff6b6b}
+    .excl-type.vacation{color:#ffd93d}
+  </style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const WORKERS=["이원훈","장형규","조현철","박진호","홍인석","하정남","황정호","김현진","전창범","오규종","김경훈","정철수","황인태","안찬범","김상원","이동현","김태민","김성환","김세영","홍원진","이재일","이준영","김태호","김택성","채관기","김재원","장병숙","윤광덕","박성기"];
+const N=WORKERS.length;
+const KR=["일","월","화","수","목","금","토"];
+const SITE_COLORS={daeyang:"#4a9eff",sungwoo:"#6effb4",yacha:"#ffd93d",jay:"#ff9f7f",jadoncha:"#88cc88",rest:"#888888",bibbeon:"#cccc55",exclRow:"#ff6b6b"};
+const SITE_LABELS={daeyang:"대양",sungwoo:"성우",yacha:"야차",jay:"제이",jadoncha:"자동차",rest:"나머지쉼",bibbeon:"비번",exclRow:"결근/휴가"};
+const SITES=["daeyang","sungwoo","yacha","jay","jadoncha","rest","bibbeon","exclRow"];
+
+function getWeekDates(){const t=new Date();return Array.from({length:7},(_,i)=>{const d=new Date(t);d.setDate(t.getDate()+i);return`${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}`;});}
+function getWeekDays(){const t=new Date();return Array.from({length:7},(_,i)=>{const d=new Date(t);d.setDate(t.getDate()+i);return KR[d.getDay()];});}
+function fmtToday(){const t=new Date();return`${t.getFullYear()}.${String(t.getMonth()+1).padStart(2,"0")}.${String(t.getDate()).padStart(2,"0")}`;}
+
+function pickForward(count,startIdx,excl){const team=[];let cur=((startIdx%N)+N)%N;while(team.length<count){const name=WORKERS[cur];cur=(cur+1)%N;if(!excl.includes(name))team.push(name);}return{team,nextCursor:cur};}
+function pickReverse(count,fromIdx,excl){const team=[];let cur=((fromIdx%N)+N)%N;while(team.length<count){const name=WORKERS[cur];if(!excl.includes(name))team.push(name);cur=((cur-1)+N)%N;}return{team:[...team].reverse(),nextIdx:cur};}
+function insertByOrder(arr,name){const idx=WORKERS.indexOf(name);let ip=arr.length;for(let i=0;i<arr.length;i++){if(WORKERS.indexOf(arr[i])>idx){ip=i;break;}}arr.splice(ip,0,name);}
+function toNum(name){return WORKERS.indexOf(name)+1;}
+
+function calcWeekSchedule(carDays,dayExcludes,firstWorker,sundayCount){
+  const firstIdx=WORKERS.indexOf(firstWorker);
+  const initBibbeon=pickReverse(6,(firstIdx-1+N)%N,[]).team;
+  let cursor=firstIdx,prevDaeyang=initBibbeon,prevSungwoo=[],prevYacha=[],prevActualBibbeon=initBibbeon;
+  const result=[];
+  for(let d=0;d<carDays.length;d++){
+    const hasCar=carDays[d],prevCar=d>0?carDays[d-1]:null;
+    const exclMap=dayExcludes[d]||{},excl=Object.keys(exclMap);
+    const avail=WORKERS.filter(w=>!excl.includes(w));
+    const bibbeon=pickReverse(6,WORKERS.indexOf(prevDaeyang[prevDaeyang.length-1]),excl).team;
+    const prevExclMap=d>0?(dayExcludes[d-1]||{}):{};
+    const absentRet=Object.keys(prevExclMap).filter(w=>prevExclMap[w]==="결근"&&!excl.includes(w));
+    const vacationRet=Object.keys(prevExclMap).filter(w=>prevExclMap[w]==="휴가"&&!excl.includes(w));
+    if(hasCar){
+      let daeyang,sungwoo,yacha,jay;
+      if(d===0||!prevCar){
+        const r1=pickForward(6,cursor,excl);daeyang=r1.team;
+        const r2=pickForward(4,r1.nextCursor,excl);sungwoo=r2.team;
+        const r3=pickForward(6,r2.nextCursor,excl);yacha=r3.team;
+        const r4=pickForward(4,r3.nextCursor,excl);jay=r4.team;
+        cursor=r4.nextCursor;
+      }else{
+        daeyang=[...prevSungwoo,...prevYacha.slice(0,2)].filter(w=>!excl.includes(w));
+        sungwoo=prevYacha.slice(2,6).filter(w=>!excl.includes(w));
+        const prevJay=result[d-1].jay.filter(w=>!excl.includes(w));
+        const r1=pickForward(6-prevJay.length,cursor,excl);yacha=[...prevJay,...r1.team];cursor=r1.nextCursor;
+        const r2=pickForward(4,cursor,excl);jay=r2.team;cursor=r2.nextCursor;
+      }
+      for(const ret of absentRet){if(daeyang.includes(ret))daeyang=daeyang.filter(w=>w!==ret);}
+      for(const ret of vacationRet){
+        insertByOrder(yacha,ret);
+        if(yacha.length>6){const pushed=yacha.splice(6,1)[0];insertByOrder(jay,pushed);if(jay.length>4)jay.splice(4,1);}
+      }
+      const assigned=[...daeyang,...sungwoo,...yacha,...jay,...bibbeon];
+      const jadoncha=avail.filter(w=>!assigned.includes(w));
+      result.push({hasCar,daeyang,sungwoo,yacha,jay,jadoncha,bibbeon,rest:[],excl:exclMap});
+      prevDaeyang=daeyang;prevSungwoo=sungwoo;prevYacha=yacha;prevActualBibbeon=bibbeon;
+    }else{
+      if(d===6&&sundayCount>0){
+        const lastIdx=WORKERS.indexOf(prevActualBibbeon[prevActualBibbeon.length-1]);
+        const sunday=pickReverse(sundayCount,lastIdx,excl).team;
+        const rest=avail.filter(w=>!sunday.includes(w)&&!bibbeon.includes(w));
+        result.push({hasCar,daeyang:[],sungwoo:[],yacha:[],jay:[],jadoncha:sunday,bibbeon,rest,excl:exclMap,isSunday:true});
+        prevDaeyang=[];prevSungwoo=[];prevYacha=[];prevActualBibbeon=bibbeon;
+      }else{
+        const lastIdx=WORKERS.indexOf(prevActualBibbeon[prevActualBibbeon.length-1]);
+        const rJ=pickReverse(4,lastIdx,excl),rS=pickReverse(4,rJ.nextIdx,excl),rD=pickReverse(6,rS.nextIdx,excl);
+        const jay=rJ.team,sungwoo=rS.team,daeyang=rD.team;
+        const assigned=[...daeyang,...sungwoo,...jay,...bibbeon];
+        const rest=avail.filter(w=>!assigned.includes(w));
+        result.push({hasCar,daeyang,sungwoo,yacha:[],jay,jadoncha:[],bibbeon,rest,excl:exclMap});
+        prevDaeyang=daeyang;prevSungwoo=sungwoo;prevYacha=[];prevActualBibbeon=bibbeon;
+        if(d<carDays.length-1&&carDays[d+1])cursor=(WORKERS.indexOf(daeyang[daeyang.length-1])+1)%N;
+      }
+    }
+  }
+  return result;
+}
+
+// State
+let state={
+  carDays:Array(7).fill(null),
+  firstWorker:"",
+  dayExcludes:Array(7).fill(null).map(()=>({})),
+  sundayCount:0,
+  popupDay:null,
+  weekDates:getWeekDates(),
+  weekDays:getWeekDays(),
+};
+
+function setState(patch){Object.assign(state,patch);render();}
+
+function render(){
+  const {carDays,firstWorker,dayExcludes,sundayCount,popupDay,weekDates,weekDays}=state;
+  const allSelected=carDays.every(c=>c!==null);
+  const schedule=(firstWorker&&allSelected)?calcWeekSchedule(carDays,dayExcludes,firstWorker,sundayCount):null;
+
+  let html=`
+  <div class="header">
+    <div class="header-title">
+      <div class="header-sub">FORKLIFT WEEKLY SCHEDULE</div>
+      <div class="header-date">오늘 · ${fmtToday()}</div>
+    </div>
+    <div class="day-row">
+      ${weekDays.map((day,idx)=>{
+        const isWeekend=day==="토"||day==="일";
+        const val=carDays[idx];
+        const exCount=Object.keys(dayExcludes[idx]).length;
+        const dayColor=isWeekend?"#ff6b6b":"#aaa";
+        return`<div class="day-col">
+          <div class="day-label" style="color:${dayColor}">${day}</div>
+          <div class="day-date">${weekDates[idx]}</div>
+          <div class="btn-car${val===true?" on-yes":""}" onclick="toggleCar(${idx},true)">있음</div>
+          <div class="btn-car${val===false?" on-no":""}" onclick="toggleCar(${idx},false)">없음</div>
+          <div class="btn-excl${exCount>0?" has-excl":""}" onclick="openPopup(${idx})">
+            <div>제외</div>${exCount>0?`<div>${exCount}명</div>`:""}
+          </div>
+          ${day==="일"?`<div class="sunday-ctrl">
+            <div class="sunday-label">인원</div>
+            <div class="sunday-btns">
+              <div class="sunday-btn" onclick="changeSunday(-1)">-</div>
+              <div class="sunday-count" style="color:${sundayCount>0?"#ffd93d":"#555"}">${sundayCount}</div>
+              <div class="sunday-btn" onclick="changeSunday(1)">+</div>
+            </div>
+          </div>`:""}
+        </div>`;
+      }).join("")}
+    </div>
+  </div>
+  <div class="content">
+    <div class="card" style="border-color:#4a9eff22">
+      <div class="card-title" style="color:#4a9eff">▪ 오늘 대양 · 1번 선택</div>
+      <div class="worker-grid">
+        ${WORKERS.map(name=>`<div class="worker-btn${firstWorker===name?" selected":""}" onclick="selectWorker('${name}')">${name}</div>`).join("")}
+      </div>
+    </div>
+    ${!schedule?`<div class="hint">${!allSelected?"📅 모든 날 차 유무를 선택해주세요":"👆 오늘 대양 1번을 선택해주세요"}</div>`:""}
+    ${schedule?renderSchedule(schedule,weekDays,weekDates,carDays,dayExcludes):""}
+  </div>
+  ${popupDay!==null?renderPopup(popupDay,weekDays,weekDates,dayExcludes):""}
+  `;
+  document.getElementById("app").innerHTML=html;
+}
+
+function renderSchedule(schedule,weekDays,weekDates,carDays,dayExcludes){
+  const thead=`<tr>
+    <th class="site-th">현장</th>
+    ${weekDays.map((day,idx)=>{
+      const isWeekend=day==="토"||day==="일";
+      const exCount=Object.keys(dayExcludes[idx]).length;
+      return`<th>
+        <div class="day-name" style="color:${isWeekend?"#ff6b6b":"#aaa"}">${day}</div>
+        <div class="day-date2">${weekDates[idx]}</div>
+        <div class="car-status" style="color:${carDays[idx]?"#4a9eff":"#ff6b6b"}">${carDays[idx]?"차O":"차X"}</div>
+        ${exCount>0?`<div class="excl-count">제외${exCount}</div>`:""}
+      </th>`;
+    }).join("")}
+  </tr>`;
+
+  const tbody=SITES.map(key=>{
+    const color=SITE_COLORS[key];
+    const label=SITE_LABELS[key];
+    const cells=schedule.map((day,idx)=>{
+      const bg=idx%2===0?"#0f0f1a":"#111120";
+      if(day.isSunday){
+        if(key==="jadoncha"){const m=day.jadoncha||[];return`<td style="background:${bg};color:#ffd93d">${m.map(toNum).join(" ")}</td>`;}
+        if(key==="rest"){const m=day.rest||[];return`<td style="background:${bg};color:#888">${m.length>0?m.map(toNum).join(" "):"-"}</td>`;}
+        if(key==="bibbeon"){const m=day.bibbeon||[];return`<td style="background:${bg};color:#cccc55">${m.length>0?m.map(toNum).join(" "):"-"}</td>`;}
+        if(key==="exclRow"){const e=Object.entries(day.excl||{});return`<td style="background:${bg}">${e.length===0?`<span style="color:#2a2a3a">-</span>`:e.map(([n,t])=>`<span style="display:block;font-size:10px;line-height:1.8;color:${t==="결근"?"#ff6b6b":"#ffd93d"};font-weight:700">${toNum(n)}${t==="결근"?"결":"휴"}</span>`).join("")}</td>`;}
+        return`<td style="background:${bg};color:#2a2a3a">-</td>`;
+      }
+      if(key==="exclRow"){const e=Object.entries(day.excl||{});return`<td style="background:${bg}">${e.length===0?`<span style="color:#2a2a3a">-</span>`:e.map(([n,t])=>`<span style="display:block;font-size:10px;line-height:1.8;color:${t==="결근"?"#ff6b6b":"#ffd93d"};font-weight:700">${toNum(n)}${t==="결근"?"결":"휴"}</span>`).join("")}</td>`;}
+      const isEmpty=(key==="yacha"&&!day.hasCar)||(key==="rest"&&day.hasCar)||(key==="jadoncha"&&!day.hasCar);
+      const members=day[key]||[];
+      if(isEmpty||members.length===0)return`<td style="background:${bg};color:#2a2a3a">-</td>`;
+      return`<td style="background:${bg};color:${color}">${members.map(toNum).join(" ")}</td>`;
+    }).join("");
+    return`<tr><td class="site-label" style="color:${color}">${label}</td>${cells}</tr>`;
+  }).join("");
+
+  const refGrid=WORKERS.map((name,i)=>`<div class="ref-item"><span class="ref-num">${i+1}</span> ${name}</div>`).join("");
+
+  return`<div class="schedule-wrap">
+    <div class="schedule-header">▪ 주간 근무표</div>
+    <div class="table-wrap"><table><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>
+    <div class="ref-wrap"><div class="ref-title">▪ 번호 참고</div><div class="ref-grid">${refGrid}</div></div>
+  </div>`;
+}
+
+function renderPopup(idx,weekDays,weekDates,dayExcludes){
+  const excludes=dayExcludes[idx];
+  const workers=WORKERS.map(name=>{
+    const status=excludes[name];
+    return`<div class="excl-btn${status==="결근"?" absent":status==="휴가"?" vacation":""}" onclick="toggleExcl(${idx},'${name}')">
+      <div class="excl-name${status==="결근"?" absent":status==="휴가"?" vacation":""}">${name}</div>
+      ${status?`<div class="excl-type ${status==="결근"?"absent":"vacation"}">${status}</div>`:""}
+    </div>`;
+  }).join("");
+  return`<div class="popup-bg" onclick="closePopup()">
+    <div class="popup-inner" onclick="event.stopPropagation()">
+      <div class="popup-head">
+        <div><span class="popup-day-name">${weekDays[idx]}요일</span><span class="popup-date">${weekDates[idx]}</span></div>
+        <div class="popup-close" onclick="closePopup()">✕</div>
+      </div>
+      <div class="popup-hint">▪ 제외 인원 (탭: 없음→결근→휴가→없음)</div>
+      <div class="worker-excl-grid">${workers}</div>
+    </div>
+  </div>`;
+}
+
+// Actions
+function toggleCar(idx,val){const c=[...state.carDays];c[idx]=c[idx]===val?null:val;setState({carDays:c});}
+function selectWorker(name){setState({firstWorker:state.firstWorker===name?"":name});}
+function changeSunday(delta){setState({sundayCount:Math.max(0,Math.min(29,state.sundayCount+delta))});}
+function openPopup(idx){setState({popupDay:idx});}
+function closePopup(){setState({popupDay:null});}
+function toggleExcl(idx,name){
+  const d=state.dayExcludes.map((e,i)=>{
+    if(i!==idx)return e;
+    const updated={...e};
+    const cur=updated[name];
+    if(!cur)updated[name]="결근";
+    else if(cur==="결근")updated[name]="휴가";
+    else delete updated[name];
+    return updated;
+  });
+  setState({dayExcludes:d});
+}
+
+render();
+</script>
+</body>
+</html>
