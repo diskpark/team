@@ -231,12 +231,17 @@ function calcSchedule(carDays,dayExcl,firstWorker,sundayCount,weekDays){
       result.push({hasCar:true,dae:dae,sun:sun,yac:yac,jay:jay,jad:jad,bib:bib,rest:[],excl:exclMap});
       prevDae=dae;prevSun=sun;prevYac=yac;prevActBib=bib;
     } else {
-      if(d===6&&sundayCount>0&&weekDays&&weekDays[d]==="일"){
+      if(sundayCount>0&&weekDays&&weekDays[d]==="일"){
         var li=WORKERS.indexOf(prevActBib[prevActBib.length-1]);
         var sw=pickRev(sundayCount,li,excl).team;
         var rest=avail.filter(function(w){return sw.indexOf(w)<0&&bib.indexOf(w)<0;});
-        result.push({hasCar:false,dae:[],sun:[],yac:[],jay:[],jad:sw,bib:bib,rest:rest,excl:exclMap,isSun:true});
-        prevDae=[];prevSun=[];prevYac=[];prevActBib=bib;
+        result.push({hasCar:false,dae:[],sun:[],yac:[],jay:[],jad:sw,bib:bib,rest:rest,excl:exclMap,isSun:true,swTeam:sw});
+        // 일요일 근무자가 6명 초과시 말번이 다음날 대양1번
+        if(sw.length>6){
+          cursor=WORKERS.indexOf(sw[sw.length-1]);
+        }
+        // 다음날 비번 기준 = 일요일 근무자 앞 6명
+        prevDae=sw.slice(0,6);prevSun=[];prevYac=[];prevActBib=sw.slice(0,6);
       } else {
         var li=WORKERS.indexOf(prevActBib[prevActBib.length-1]);
         var rJ=pickRev(4,li,excl),rS=pickRev(4,rJ.next,excl),rD=pickRev(6,rS.next,excl);
@@ -362,7 +367,7 @@ function render(){
   // HEADER
   var hdr=h("div",{className:"header"});
   var htitle=h("div",{className:"header-title"});
-  htitle.appendChild(h("div",{className:"header-sub"},"FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v4.3</span>"));
+  htitle.appendChild(h("div",{className:"header-sub"},"FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v4.5</span>"));
   htitle.appendChild(h("div",{className:"header-date"},"오늘 · "+fmtToday()));
   hdr.appendChild(htitle);
 
