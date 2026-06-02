@@ -367,7 +367,7 @@ function render(){
   // HEADER
   var hdr=h("div",{className:"header"});
   var htitle=h("div",{className:"header-title"});
-  htitle.appendChild(h("div",{className:"header-sub"},"FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v4.5</span>"));
+  htitle.appendChild(h("div",{className:"header-sub"},"FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v4.8</span>"));
   htitle.appendChild(h("div",{className:"header-date"},"오늘 · "+fmtToday()));
   hdr.appendChild(htitle);
 
@@ -559,7 +559,7 @@ var SITES=[
   {key:"yac",  label:"야차",   color:"#ffd93d"},
   {key:"jay",  label:"제이",   color:"#ff9f7f"},
   {key:"jad",  label:"자동차", color:"#88cc88"},
-  {key:"rest", label:"나머지쉼",color:"#888888"},
+  {key:"rest", label:"비번",color:"#888888"},
   {key:"bib",  label:"비번",   color:"#cccc55"},
   {key:"excl", label:"결근/휴가",color:"#ff6b6b"}
 ];
@@ -675,14 +675,14 @@ function renderMySchedule(sched,wk,wd){
   var card=h("div",{className:"my-card"});
   card.appendChild(h("div",{className:"my-title"},"▪ "+name+" · 내 주간 근무"));
   var rows=h("div",{className:"my-row"});
-  var LABELS={dae:"대양",sun:"성우",yac:"야차",jay:"제이",jad:"자동차",rest:"나머지쉼",bib:"비번"};
+  var LABELS={dae:"대양",sun:"성우",yac:"야차",jay:"제이",jad:"자동차",rest:"비번",bib:"비번"};
   var COLORS={dae:"#4a9eff",sun:"#6effb4",yac:"#ffd93d",jay:"#ff9f7f",jad:"#88cc88",rest:"#888",bib:"#cccc55"};
   sched.forEach(function(day,idx){
     var site="",color="#aaa",pos=0;
     if(day.isSun){
       if((day.jad||[]).indexOf(name)>=0){pos=(day.jad||[]).indexOf(name)+1;site="일요근무("+pos+"번)";color="#ffd93d";}
       else if((day.bib||[]).indexOf(name)>=0){site="비번";color="#cccc55";}
-      else if((day.rest||[]).indexOf(name)>=0){site="쉬는날";color="#888";}
+      else if((day.rest||[]).indexOf(name)>=0){site="비번";color="#888";}
       else site="미배정";
     } else {
       var NOPOS=["jad","rest","bib"];
