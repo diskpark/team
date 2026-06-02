@@ -9,6 +9,17 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#0d0d1a;color:#e0e0f0;font-family:'Noto Sans KR',sans-serif;min-height:100vh}
 ::-webkit-scrollbar{width:4px;height:4px}
+.settings-btn{position:fixed;top:12px;right:12px;z-index:150;width:36px;height:36px;border-radius:50%;background:#1a1a2e;border:1px solid #ffffff22;color:#aaa;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}
+.settings-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:#000000cc;z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.settings-inner{background:#13132a;border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-width:480px;max-height:70vh;overflow-y:auto}
+.settings-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.settings-title{font-size:16px;font-weight:900;color:#fff}
+.settings-close{color:#555;font-size:20px;cursor:pointer;padding:0 4px}
+.settings-section{margin-bottom:20px}
+.settings-label{font-size:11px;color:#666;font-weight:700;letter-spacing:2px;margin-bottom:10px}
+.settings-options{display:flex;gap:8px;flex-wrap:wrap}
+.settings-opt{border:1.5px solid #333;border-radius:10px;padding:8px 14px;font-size:12px;color:#aaa;cursor:pointer;background:#1a1a2e;user-select:none;transition:all 0.15s}
+.settings-opt.active{border-color:#4a9eff;color:#fff;background:#4a9eff22;font-weight:700}
 ::-webkit-scrollbar-thumb{background:#333;border-radius:4px}
 .header{background:linear-gradient(135deg,#0d0d1a 0%,#1a1a3e 100%);border-bottom:1px solid #ffffff11;padding:20px 16px 16px}
 .header-title{text-align:center;margin-bottom:14px}
@@ -243,11 +254,34 @@ function calcSchedule(carDays,dayExcl,firstWorker,sundayCount,weekDays){
 
 // State
 var state={
-  carDays:[null,null,null,null,null,null,false],
-  firstWorker:"",myName:localStorage.getItem('myName')||'',
-  dayExcludes:[{},{},{},{},{},{},{}],
-  sundayCount:4,
-  popupDay:null,vacPopup:false,
+  carDays:(function(){
+    try{
+      var saved=JSON.parse(localStorage.getItem('carPlan')||'null');
+      if(saved&&saved.date===new Date().toDateString())return saved.days;
+    }catch(e){}
+    var days=[null,null,null,null,null,null,null];
+    var wk=getWeekDays();
+    for(var i=0;i<wk.length;i++){if(wk[i]==="일")days[i]=false;}
+    return days;
+  })(),
+  firstWorker:(function(){
+    try{
+      var saved=JSON.parse(localStorage.getItem('firstWorker')||'null');
+      if(saved&&saved.date===new Date().toDateString())return saved.name||'';
+    }catch(e){}
+    return '';
+  })(),myName:localStorage.getItem('myName')||'',
+  history:(function(){try{return JSON.parse(localStorage.getItem('dayHistory')||'[]');}catch(e){return[];}}()),
+  dayExcludes:(function(){
+    try{
+      var saved=JSON.parse(localStorage.getItem('dayExcludes')||'null');
+      if(saved&&saved.date===new Date().toDateString())return saved.data;
+    }catch(e){}
+    return [{},{},{},{},{},{},{}];
+  })(),
+  sundayCount:parseInt(localStorage.getItem('sundayCount')||'4',10),
+  popupDay:null,vacPopup:false,settingsOpen:false,myNameOpen:localStorage.getItem('myNameOpen')!=='false',d1Open:localStorage.getItem('d1Open')!=='false',
+  settings:{font:"noto",size:4,skin:"dark"},
   weekDates:getWeekDates(),
   weekDays:getWeekDays(),
   weekDateObjs:getWeekDateObjs()
@@ -273,7 +307,40 @@ function h(tag,attrs,children){
   return el;
 }
 
+function applySettings(s){
+  var fonts={"noto":"'Noto Sans KR',sans-serif","system":"-apple-system,sans-serif","nanum":"'Nanum Gothic',sans-serif"};
+  var sizeMap=[10,11,12,13,14,15,16];
+  var skins={
+    "dark":{bg:"#0d0d1a",card:"#13132a",hdr1:"#0d0d1a",hdr2:"#1a1a3e"},
+    "navy":{bg:"#080f1e",card:"#0d1929",hdr1:"#080f1e",hdr2:"#0d1e3a"},
+    "black":{bg:"#000000",card:"#0d0d0d",hdr1:"#000000",hdr2:"#111111"}
+  };
+  var font=fonts[s.font]||fonts["noto"];
+  var size=(sizeMap[s.size]||13)+"px";
+  var sk=skins[s.skin]||skins["dark"];
+
+  document.body.style.setProperty("font-family",font,"important");
+  document.body.style.setProperty("font-size",size,"important");
+  document.body.style.setProperty("background",sk.bg,"important");
+
+  var styleEl=document.getElementById("dyn-style");
+  if(!styleEl){styleEl=document.createElement("style");styleEl.id="dyn-style";document.head.appendChild(styleEl);}
+  styleEl.textContent=
+    "body{font-family:"+font+"!important;font-size:"+size+"!important;background:"+sk.bg+"!important}"+
+    ".header{background:linear-gradient(135deg,"+sk.hdr1+" 0%,"+sk.hdr2+" 100%)!important}"+
+    ".card{background:"+sk.card+"!important;border:1px solid #4a9eff22}"+
+    ".my-card{background:"+sk.card+"!important;border:1px solid #ff9f7f33}"+
+    ".sw{background:"+sk.card+"!important}"+
+    ".pinner,.settings-inner{background:"+sk.card+"!important}"+
+    "table th,td.site-td,th.site-th{background:"+sk.card+"!important}"+
+    ".wbtn,.eb{background:"+sk.card+"!important}"+
+    ".btn{background:"+sk.card+"!important}"+
+    ".my-item{background:"+sk.card+"!important}"+
+    ".ref-wrap,.sw-hd{background:"+sk.card+"!important}";
+}
+
 function render(){
+  applySettings(state.settings);
   var wd=state.weekDates,wk=state.weekDays,cd=state.carDays;
   var dayExcl=state.dayExcludes,sc=state.sundayCount;
   var autoVac=getAutoVac(state.weekDateObjs);
@@ -287,11 +354,15 @@ function render(){
 
   var app=document.getElementById("app");
   app.innerHTML="";
+  // 설정 버튼
+  var settBtn=h("div",{className:"settings-btn"},"⚙️");
+  settBtn.onclick=function(){setState({settingsOpen:true});};
+  app.appendChild(settBtn);
 
   // HEADER
   var hdr=h("div",{className:"header"});
   var htitle=h("div",{className:"header-title"});
-  htitle.appendChild(h("div",{className:"header-sub"},"FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v2.4</span>"));
+  htitle.appendChild(h("div",{className:"header-sub"},"FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v4.3</span>"));
   htitle.appendChild(h("div",{className:"header-date"},"오늘 · "+fmtToday()));
   hdr.appendChild(htitle);
 
@@ -310,25 +381,73 @@ function render(){
     btnN.onclick=function(){toggleCar(idx,false);};
     col.appendChild(btnN);
     var btnE=h("div",{className:"btn"+(exCount>0?" has-excl":" no-excl")});
-    btnE.innerHTML=exCount>0?"제외<br>"+exCount+"명":"제외";
+    if(exCount>0){
+      var excMap=merged[idx];
+      var vacCnt=Object.keys(excMap).filter(function(k){return excMap[k]==="휴가";}).length;
+      var absCnt=Object.keys(excMap).filter(function(k){return excMap[k]==="결근";}).length;
+      var swCnt=Object.keys(excMap).filter(function(k){return excMap[k]==="씨월드";}).length;
+      var parts=[];
+      if(vacCnt>0)parts.push("휴"+vacCnt);
+      if(absCnt>0)parts.push("결"+absCnt);
+      if(swCnt>0)parts.push("씨"+swCnt);
+      btnE.innerHTML=parts.join(" ");
+    } else {
+      btnE.innerHTML="제외";
+    }
     btnE.onclick=function(){setState({popupDay:idx});};
     col.appendChild(btnE);
-    if(day==="일"){
-      var sc2=h("div",{className:"sunday-ctrl"});
-      sc2.appendChild(h("div",{className:"sunday-lbl"},"인원"));
-      var sr=h("div",{className:"sunday-row"});
-      var bm=h("div",{className:"sun-btn"},"-");
-      bm.onclick=function(){setState({sundayCount:Math.max(0,state.sundayCount-1)});};
-      var cnt=h("div",{className:"sun-cnt",style:"color:"+(sc>0?"#ffd93d":"#555")},String(sc));
-      var bp=h("div",{className:"sun-btn"},"+" );
-      bp.onclick=function(){setState({sundayCount:Math.min(29,state.sundayCount+1)});};
-      sr.appendChild(bm);sr.appendChild(cnt);sr.appendChild(bp);
-      sc2.appendChild(sr);
-      col.appendChild(sc2);
-    }
+
     dayRow.appendChild(col);
   });
   hdr.appendChild(dayRow);
+
+
+
+  // 인원 +/- 왼쪽에 오늘 휴가/결근자 표시
+  var todayExcl2=merged[0]||{};
+  var todayVac2=Object.keys(todayExcl2).filter(function(k){return todayExcl2[k]==="휴가";});
+  var todayAbs2=Object.keys(todayExcl2).filter(function(k){return todayExcl2[k]==="결근";});
+  var todaySw2=Object.keys(todayExcl2).filter(function(k){return todayExcl2[k]==="씨월드";});
+  var bottomRow=h("div",{style:"display:flex;align-items:center;justify-content:space-between;margin-top:10px;min-height:36px"});
+  // 왼쪽: 오늘 휴가/결근자
+  var infoLeft=h("div",{style:"flex:1;padding-right:8px"});
+  // 전체 7일 제외자 수집해서 상태창에 표시
+  var allVacList=[],allAbsList=[],allSwList=[];
+  merged.forEach(function(exclMap,i){
+    var dayLabel=wk[i];
+    Object.keys(exclMap).forEach(function(name){
+      var t=exclMap[name];
+      if(t==="휴가") allVacList.push(name+"("+dayLabel+")");
+      else if(t==="결근") allAbsList.push(name+"("+dayLabel+")");
+      else if(t==="씨월드") allSwList.push(name+"("+dayLabel+")");
+    });
+  });
+  // 중복 제거
+  function dedup(arr){var seen={},out=[];arr.forEach(function(v){var n=v.split("(")[0];if(!seen[n]){seen[n]=v;out.push(v);}});return out;}
+  allVacList=dedup(allVacList);allAbsList=dedup(allAbsList);allSwList=dedup(allSwList);
+  var infoLine=document.createElement("div");
+  infoLine.style.cssText="font-size:13px;font-weight:700;line-height:1.8;display:flex;flex-wrap:wrap;gap:8px";
+  if(allVacList.length>0){var sp=document.createElement("span");sp.style.color="#ffd93d";sp.textContent="휴가·"+allVacList.join(" ");infoLine.appendChild(sp);}
+  if(allAbsList.length>0){var sp=document.createElement("span");sp.style.color="#ff6b6b";sp.textContent="결근·"+allAbsList.join(" ");infoLine.appendChild(sp);}
+  if(allSwList.length>0){var sp=document.createElement("span");sp.style.color="#88eeff";sp.textContent="씨월드·"+allSwList.join(" ");infoLine.appendChild(sp);}
+  if(infoLine.children.length>0)infoLeft.appendChild(infoLine);
+  // 오른쪽: 일요일 있을때만 인원 +/-
+  var infoRight=h("div",{style:"display:flex;flex-direction:column;align-items:flex-end;gap:2px"});
+  var wk2=state.weekDays;
+  if(wk2.indexOf("일")>=0){
+    var lbl=h("div",{className:"sunday-lbl",style:"text-align:right"},"인원");
+    var sr2=h("div",{className:"sunday-row"});
+    var bm2=h("div",{className:"sun-btn"},"-");
+    bm2.onclick=function(){var v=Math.max(0,state.sundayCount-1);localStorage.setItem('sundayCount',v);setState({sundayCount:v});};
+    var cnt2=h("div",{className:"sun-cnt",style:"color:"+(sc>0?"#ffd93d":"#555")},String(sc));
+    var bp2=h("div",{className:"sun-btn"},"+");
+    bp2.onclick=function(){var v=Math.min(29,state.sundayCount+1);localStorage.setItem('sundayCount',v);setState({sundayCount:v});};
+    sr2.appendChild(bm2);sr2.appendChild(cnt2);sr2.appendChild(bp2);
+    infoRight.appendChild(lbl);infoRight.appendChild(sr2);
+  }
+  bottomRow.appendChild(infoLeft);
+  bottomRow.appendChild(infoRight);
+  hdr.appendChild(bottomRow);
 
   var vb=h("div",{className:"vac-btn-wrap"});
   var vbtn=h("div",{className:"vac-btn"},"📋 연간 휴가 리스트");
@@ -342,27 +461,64 @@ function render(){
 
   // 내 이름 선택
   var myCard=h("div",{className:"card",style:"border:1px solid #ff9f7f22"});
-  myCard.appendChild(h("div",{className:"card-title",style:"color:#ff9f7f"},"▪ 내 이름 선택"));
-  var myGrid=h("div",{className:"grid4"});
-  WORKERS.forEach(function(name){
-    var btn=h("div",{className:"wbtn"+(state.myName===name?" my-sel":"")},name);
-    btn.onclick=function(){selectMyName(name);};
-    myGrid.appendChild(btn);
-  });
-  myCard.appendChild(myGrid);
+  var myHead=h("div",{style:"display:flex;justify-content:space-between;align-items:center;cursor:pointer"});
+  var myTitleEl=document.createElement("div");
+  myTitleEl.style.cssText="font-size:11px;font-weight:700;letter-spacing:2px;color:#ff9f7f";
+  myTitleEl.textContent="▪ 내 이름 선택"+(state.myName?" · "+state.myName:"");
+  var myToggle=h("div",{style:"color:#aaa;font-size:11px;font-weight:700"},state.myNameOpen?"▲ 접기":"▼ 펼치기");
+  myHead.appendChild(myTitleEl);
+  myHead.appendChild(myToggle);
+  myHead.onclick=function(){var next=!state.myNameOpen;localStorage.setItem('myNameOpen',next);setState({myNameOpen:next});};
+  myCard.appendChild(myHead);
+  if(state.myNameOpen){
+    var myGrid=h("div",{className:"grid4",style:"margin-top:10px"});
+    WORKERS.forEach(function(name){
+      var btn=h("div",{className:"wbtn"+(state.myName===name?" my-sel":"")},name);
+      btn.onclick=function(e){e.stopPropagation();selectMyName(name);};
+      myGrid.appendChild(btn);
+    });
+    myCard.appendChild(myGrid);
+  }
   cont.appendChild(myCard);
 
   // 대양 1번 선택
   var d1Card=h("div",{className:"card",style:"border:1px solid #4a9eff22"});
-  d1Card.appendChild(h("div",{className:"card-title",style:"color:#4a9eff"},"▪ 오늘 대양 · 1번 선택"));
-  var d1Grid=h("div",{className:"grid4"});
+  var d1Head=h("div",{style:"display:flex;justify-content:space-between;align-items:center;cursor:pointer"});
+  var d1TitleEl=document.createElement("div");
+  d1TitleEl.style.cssText="font-size:11px;font-weight:700;letter-spacing:2px;color:#4a9eff";
+  d1TitleEl.textContent="▪ 오늘 대양 · 1번 선택"+(state.firstWorker?" · "+state.firstWorker:"");
+  var d1Toggle=h("div",{style:"color:#aaa;font-size:11px;font-weight:700"},state.d1Open?"▲ 접기":"▼ 펼치기");
+  d1Head.appendChild(d1TitleEl);d1Head.appendChild(d1Toggle);
+  d1Head.onclick=function(){var next=!state.d1Open;localStorage.setItem('d1Open',next);setState({d1Open:next});};
+  d1Card.appendChild(d1Head);
+  var d1Grid=h("div",{className:"grid4",style:"margin-top:10px"});
+  if(!state.d1Open){cont.appendChild(d1Card);} else {
+  var todayStr=new Date().toDateString();
+  var hist=state.history||[];
   WORKERS.forEach(function(name){
-    var btn=h("div",{className:"wbtn"+(state.firstWorker===name?" sel":"")},name);
-    btn.onclick=function(){setState({firstWorker:state.firstWorker===name?"":name});};
+    var btn=h("div",{className:"wbtn"+(state.firstWorker===name?" sel":""),style:"position:relative;padding-bottom:14px"});
+    var nameEl=document.createElement("div");
+    nameEl.textContent=name;
+    btn.appendChild(nameEl);
+    // 최근 이틀 표시
+    hist.forEach(function(h,hi){
+      if(h.name===name){
+        var d=new Date(h.date),t=new Date();t.setHours(0,0,0,0);d.setHours(0,0,0,0);
+        var diff=Math.round((t-d)/(1000*60*60*24));
+        var lbl=diff===0?"오늘 1번":diff===1?"어제 1번":"";
+        if(lbl){
+          var tag=document.createElement("div");
+          tag.style.cssText="font-size:9px;color:#ffd93d;font-weight:700;margin-top:2px";
+          tag.textContent=lbl;
+          btn.appendChild(tag);
+        }
+      }
+    });
+    btn.onclick=function(){selectFirstWorker(name);};
     d1Grid.appendChild(btn);
   });
   d1Card.appendChild(d1Grid);
-  cont.appendChild(d1Card);
+  cont.appendChild(d1Card);}
 
   if(!sched){
     cont.appendChild(h("div",{className:"hint"},allSel?"👆 오늘 대양 1번을 선택해주세요":"📅 모든 날 차 유무를 선택해주세요"));
@@ -386,6 +542,9 @@ function render(){
   }
   if(state.vacPopup){
     app.appendChild(renderVacPopup());
+  }
+  if(state.settingsOpen){
+    app.appendChild(renderSettings());
   }
 }
 
@@ -629,9 +788,84 @@ function selectMyName(name){
   localStorage.setItem('myName',newName);
   setState({myName:newName});
 }
+function selectFirstWorker(name){
+  var isDesel=state.firstWorker===name;
+  var newName=isDesel?"":name;
+  if(!isDesel&&name){
+    // history에 오늘 날짜+이름 저장 (최근 2개만)
+    var today=new Date().toDateString();
+    var hist=state.history.filter(function(h){return h.date!==today;});
+    hist.unshift({date:today,name:name});
+    if(hist.length>2)hist=hist.slice(0,2);
+    localStorage.setItem('dayHistory',JSON.stringify(hist));
+    localStorage.setItem('firstWorker',JSON.stringify({date:new Date().toDateString(),name:newName}));
+    setState({firstWorker:newName,history:hist});
+  } else {
+    localStorage.setItem('firstWorker',JSON.stringify({date:new Date().toDateString(),name:newName}));
+    setState({firstWorker:newName});
+  }
+}
+function renderSettings(){
+  var s=state.settings;
+  var bg=h("div",{className:"settings-bg"});
+  bg.onclick=function(){setState({settingsOpen:false});};
+  var inner=h("div",{className:"settings-inner"});
+  inner.onclick=function(e){e.stopPropagation();};
+  var head=h("div",{className:"settings-head"});
+  head.appendChild(h("div",{className:"settings-title"},"⚙️ 설정"));
+  var cls=h("div",{className:"settings-close"},"✕");
+  cls.onclick=function(){setState({settingsOpen:false});};
+  head.appendChild(cls);
+  inner.appendChild(head);
+
+  // 폰트
+  var sec1=h("div",{className:"settings-section"});
+  sec1.appendChild(h("div",{className:"settings-label"},"▪ 폰트"));
+  var opts1=h("div",{className:"settings-options"});
+  [{v:"noto",l:"Noto Sans"},{v:"system",l:"시스템"},{v:"nanum",l:"나눔고딕"}].forEach(function(opt){
+    var btn=h("div",{className:"settings-opt"+(s.font===opt.v?" active":"")},opt.l);
+    btn.onclick=function(){var ns=Object.assign({},state.settings,{font:opt.v});setState({settings:ns});};
+    opts1.appendChild(btn);
+  });
+  sec1.appendChild(opts1);
+  inner.appendChild(sec1);
+
+  // 글씨 크기
+  var sec2=h("div",{className:"settings-section"});
+  sec2.appendChild(h("div",{className:"settings-label"},"▪ 글씨 크기"));
+  var sizeRow=h("div",{style:"display:flex;align-items:center;gap:12px"});
+  var sizeMap=[10,11,12,13,14,15,16];
+  var btnMinus=h("div",{className:"settings-opt",style:"font-size:18px;padding:6px 16px;font-weight:900"},"-");
+  btnMinus.onclick=function(){var ns=Object.assign({},state.settings,{size:Math.max(0,state.settings.size-1)});setState({settings:ns});};
+  var sizeVal=h("div",{style:"font-size:15px;font-weight:700;color:#fff;min-width:40px;text-align:center"},sizeMap[s.size]+"px");
+  var btnPlus=h("div",{className:"settings-opt",style:"font-size:18px;padding:6px 16px;font-weight:900"},"+" );
+  btnPlus.onclick=function(){var ns=Object.assign({},state.settings,{size:Math.min(6,state.settings.size+1)});setState({settings:ns});};
+  sizeRow.appendChild(btnMinus);
+  sizeRow.appendChild(sizeVal);
+  sizeRow.appendChild(btnPlus);
+  sec2.appendChild(sizeRow);
+  inner.appendChild(sec2);
+
+  // 스킨
+  var sec3=h("div",{className:"settings-section"});
+  sec3.appendChild(h("div",{className:"settings-label"},"▪ 스킨"));
+  var opts3=h("div",{className:"settings-options"});
+  [{v:"dark",l:"🌌 다크"},{v:"navy",l:"🌊 네이비"},{v:"black",l:"⬛ 블랙"}].forEach(function(opt){
+    var btn=h("div",{className:"settings-opt"+(s.skin===opt.v?" active":"")},opt.l);
+    btn.onclick=function(){var ns=Object.assign({},state.settings,{skin:opt.v});setState({settings:ns});};
+    opts3.appendChild(btn);
+  });
+  sec3.appendChild(opts3);
+  inner.appendChild(sec3);
+
+  bg.appendChild(inner);
+  return bg;
+}
+
 function toggleCar(idx,val){
   var c=state.carDays.slice();
   c[idx]=c[idx]===val?null:val;
+  localStorage.setItem('carPlan',JSON.stringify({date:new Date().toDateString(),days:c}));
   setState({carDays:c});
 }
 function toggleExcl(idx,name){
@@ -645,6 +879,7 @@ function toggleExcl(idx,name){
     else delete u[name];
     return u;
   });
+  localStorage.setItem('dayExcludes',JSON.stringify({date:new Date().toDateString(),data:d}));
   setState({dayExcludes:d});
 }
 
