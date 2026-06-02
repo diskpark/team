@@ -143,6 +143,8 @@ var SEAWORLD_SCHEDULE=[
   {name:"김재일", start:"2026-06-16",end:"2026-06-19"},
   {name:"문환석", start:"2026-10-14",end:"2026-10-17"}
 ];
+// 씨월드 고정 인원 (땜빵 제외 대상)
+var SEAWORLD_MEMBERS=["정태경","박혁신","김재일","문환석"];
 
 function getWeekDates(){
   var t=new Date(),r=[];
@@ -236,12 +238,31 @@ function calcSchedule(carDays,dayExcl,firstWorker,sundayCount,weekDays){
         var sw=pickRev(sundayCount,li,excl).team;
         var rest=avail.filter(function(w){return sw.indexOf(w)<0&&bib.indexOf(w)<0;});
         result.push({hasCar:false,dae:[],sun:[],yac:[],jay:[],jad:sw,bib:bib,rest:rest,excl:exclMap,isSun:true,swTeam:sw});
-        // 일요일 근무자가 6명 초과시 말번이 다음날 대양1번
-        if(sw.length>6){
-          cursor=WORKERS.indexOf(sw[sw.length-1]);
+        // 차 있음 다음날 비번: 근무자 + 부족하면 다음순번으로 6명 채우기
+        var bibForNext=sw.slice();
+        if(bibForNext.length>6){
+          // 말번 탈락 → 대양1번
+          cursor=WORKERS.indexOf(bibForNext[bibForNext.length-1]);
+          bibForNext=bibForNext.slice(0,6);
+        } else if(bibForNext.length<6){
+          // 부족분 다음순번으로 채우기
+          var lastIdx=WORKERS.indexOf(bibForNext[bibForNext.length-1]);
+          var need=6-bibForNext.length;
+          var cur=(lastIdx+1)%N;
+          for(var ni=0;ni<need;ni++){
+            while(excl.indexOf(WORKERS[cur])>=0) cur=(cur+1)%N;
+            bibForNext.push(WORKERS[cur]);
+            cur=(cur+1)%N;
+          }
+          cursor=cur;
+        } else {
+          cursor=WORKERS.indexOf(bibForNext[bibForNext.length-1])+1;
         }
-        // 다음날 비번 기준 = 일요일 근무자 앞 6명
-        prevDae=sw.slice(0,6);prevSun=[];prevYac=[];prevActBib=sw.slice(0,6);
+        prevDae=bibForNext;
+        // 차 없음 다음날: 일요일에 쉰 사람들 말번부터 역순
+        var restAll=WORKERS.filter(function(w){return sw.indexOf(w)<0&&excl.indexOf(w)<0;});
+        prevActBib=restAll;
+        prevSun=[];prevYac=[];
       } else {
         var li=WORKERS.indexOf(prevActBib[prevActBib.length-1]);
         var rJ=pickRev(4,li,excl),rS=pickRev(4,rJ.next,excl),rD=pickRev(6,rS.next,excl);
@@ -367,7 +388,7 @@ function render(){
   // HEADER
   var hdr=h("div",{className:"header"});
   var htitle=h("div",{className:"header-title"});
-  htitle.appendChild(h("div",{className:"header-sub"},"FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v4.8</span>"));
+  htitle.appendChild(h("div",{className:"header-sub"},"FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v5.9</span>"));
   htitle.appendChild(h("div",{className:"header-date"},"오늘 · "+fmtToday()));
   hdr.appendChild(htitle);
 
@@ -559,6 +580,7 @@ var SITES=[
   {key:"yac",  label:"야차",   color:"#ffd93d"},
   {key:"jay",  label:"제이",   color:"#ff9f7f"},
   {key:"jad",  label:"자동차", color:"#88cc88"},
+  {key:"sunw", label:"일요근무",color:"#ffd93d"},
   {key:"rest", label:"비번",color:"#888888"},
   {key:"bib",  label:"비번",   color:"#cccc55"},
   {key:"excl", label:"결근/휴가",color:"#ff6b6b"}
@@ -566,7 +588,151 @@ var SITES=[
 
 function renderTable(sched,wk,wd,cd,merged){
   var wrap=h("div",{className:"sw"});
-  wrap.appendChild(h("div",{className:"sw-hd"},"▪ 주간 근무표"));
+  // 내일 근무 복사 버튼
+  var swHead=h("div",{style:"display:flex;justify-content:space-between;align-items:center;padding:12px 14px 8px;border-bottom:1px solid #ffffff0a"});
+  swHead.appendChild(h("div",{style:"font-size:11px;color:#666;font-weight:700;letter-spacing:2px"},"▪ 주간 근무표"));
+  if(sched&&sched.length>1){
+    // 내일 근무 텍스트 생성 함수
+    function formatNames(label, names){
+      if(!names||names.length===0) return "";
+      // 라벨을 4글자 기준으로 맞추기
+      var labels={"대양":"대양","성우":"성우","오선":"오선","C":"  C","휴가":"휴가","결근":"결근","차":"  차","일요근무":"일요근무"};
+      var lb=(labels[label]||label)+", ";
+      // 두번째 줄 들여쓰기: lb 길이만큼
+      var pad="";
+      for(var p=0;p<lb.length;p++) pad+=" ";
+      var line="";
+      for(var i=0;i<names.length;i+=4){
+        var chunk=names.slice(i,i+4);
+        if(i===0) line+=lb+chunk.join(", ")+"\n";
+        else line+=pad+chunk.join(", ")+"\n";
+      }
+      return line;
+    }
+    function makeTomorrowText(){
+      var tomorrow=sched[1];
+      var tIdx=1;
+      var dateStr=wd[tIdx];
+      var dayStr=wk[tIdx];
+      var line=dateStr.replace(".","/").replace(/^0/,"")+" "+dayStr+"\n";
+      var exclMap=tomorrow.excl||{};
+      var tomorrowMerged=merged[1]||{};
+      var vacNames=Object.keys(tomorrowMerged).filter(function(k){return tomorrowMerged[k]==="휴가";});
+      var absNames=Object.keys(tomorrowMerged).filter(function(k){return tomorrowMerged[k]==="결근";});
+      // 씨월드: merged 기준
+      var swNames=Object.keys(tomorrowMerged).filter(function(k){return tomorrowMerged[k]==="씨월드";});
+      if(tomorrow.hasCar){
+        line+=formatNames("대양",tomorrow.dae);
+        line+=formatNames("성우",tomorrow.sun);
+        line+=formatNames("차",tomorrow.yac);
+        line+=formatNames("오선",tomorrow.jay);
+        line+=formatNames("차",tomorrow.jad);
+      } else if(tomorrow.isSun){
+        line+=formatNames("일요근무",tomorrow.jad);
+      } else {
+        line+=formatNames("대양",tomorrow.dae);
+        line+=formatNames("성우",tomorrow.sun);
+        line+=formatNames("오선",tomorrow.jay);
+      }
+      // 씨월드 고정 인원 항상 표시
+      var seaworldFixed=["정태경"];
+      line+=formatNames("C",seaworldFixed);
+      line+=formatNames("휴가",vacNames);
+      line+=formatNames("결근",absNames);
+      return line.trim();
+    }
+
+    // 미리보기 버튼
+    var previewBtn=h("div",{style:"font-size:11px;color:#ffd93d;font-weight:700;cursor:pointer;padding:4px 10px;border:1px solid #ffd93d44;border-radius:8px;background:#ffd93d11"},"👁 미리보기");
+    previewBtn.onclick=function(){
+      var text=makeTomorrowText();
+      // 미리보기 팝업
+      var pbg=h("div",{style:"position:fixed;top:0;left:0;right:0;bottom:0;background:#000000cc;z-index:300;display:flex;align-items:flex-end;justify-content:center"});
+      pbg.onclick=function(){document.body.removeChild(pbg);};
+      var pinner=h("div",{style:"background:#13132a;border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-width:480px"});
+      pinner.onclick=function(e){e.stopPropagation();};
+      var phead=h("div",{style:"display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"});
+      phead.appendChild(h("div",{style:"font-size:14px;font-weight:900;color:#fff"},"📋 내일 근무 미리보기"));
+      var pclose=h("div",{style:"color:#555;font-size:20px;cursor:pointer"},  "✕");
+      pclose.onclick=function(){document.body.removeChild(pbg);};
+      phead.appendChild(pclose);
+      pinner.appendChild(phead);
+      // 오늘 근무표 (전날 확인용)
+      var todayDay=sched[0];
+      var todayExclMap=todayDay.excl||{};
+      var todayVac=Object.keys(todayExclMap).filter(function(k){return todayExclMap[k]==="휴가";});
+      var todayAbs=Object.keys(todayExclMap).filter(function(k){return todayExclMap[k]==="결근";});
+      var todaySw=Object.keys(todayExclMap).filter(function(k){return todayExclMap[k]==="씨월드";});
+      var todayText=wd[0].replace(".","/").replace(/^0/,"")+" "+wk[0]+" (오늘)\n";
+      if(todayDay.hasCar){
+        if(todayDay.dae&&todayDay.dae.length>0) todayText+="대양, "+todayDay.dae.join(", ")+"\n";
+        if(todayDay.sun&&todayDay.sun.length>0) todayText+="성우, "+todayDay.sun.join(", ")+"\n";
+        if(todayDay.yac&&todayDay.yac.length>0) todayText+="차, "+todayDay.yac.join(", ")+"\n";
+        if(todayDay.jay&&todayDay.jay.length>0) todayText+="오선, "+todayDay.jay.join(", ")+"\n";
+        if(todayDay.jad&&todayDay.jad.length>0) todayText+="차, "+todayDay.jad.join(", ")+"\n";
+      } else {
+        if(todayDay.dae&&todayDay.dae.length>0) todayText+="대양, "+todayDay.dae.join(", ")+"\n";
+        if(todayDay.sun&&todayDay.sun.length>0) todayText+="성우, "+todayDay.sun.join(", ")+"\n";
+        if(todayDay.jay&&todayDay.jay.length>0) todayText+="오선, "+todayDay.jay.join(", ")+"\n";
+      }
+      if(todaySw.length>0) todayText+="씨월드, "+todaySw.join(", ")+"\n";
+      if(todayVac.length>0) todayText+="휴가, "+todayVac.join(", ")+"\n";
+      if(todayAbs.length>0) todayText+="결근, "+todayAbs.join(", ")+"\n";
+
+      var todayLabel=h("div",{style:"font-size:10px;color:#666;font-weight:700;letter-spacing:2px;margin-bottom:6px"},"▪ 오늘 근무");
+      var todayPre=h("div",{style:"background:#0d0d1a;border-radius:10px;padding:12px;font-size:12px;line-height:1.9;color:#888;white-space:pre-wrap;word-break:break-all;margin-bottom:14px"},todayText.trim());
+      pinner.appendChild(todayLabel);
+      pinner.appendChild(todayPre);
+
+      // 내일 텍스트 표시
+      var tomorrowLabel=h("div",{style:"font-size:10px;color:#4a9eff88;font-weight:700;letter-spacing:2px;margin-bottom:6px"},"▪ 내일 근무 (카톡 발송용)");
+      var pre=h("div",{style:"background:#0d0d1a;border-radius:10px;padding:14px;font-size:13px;line-height:2;color:#e0e0f0;white-space:pre-wrap;word-break:break-all;margin-bottom:16px"},text);
+      pinner.appendChild(tomorrowLabel);
+      pinner.appendChild(pre);
+      // 복사 버튼
+      var cbtn=h("div",{style:"background:#4a9eff;color:#fff;font-size:14px;font-weight:700;border-radius:12px;padding:12px;text-align:center;cursor:pointer"},"📋 복사하기");
+      cbtn.onclick=function(){
+        if(navigator.clipboard){
+          navigator.clipboard.writeText(text).then(function(){
+            cbtn.textContent="✅ 복사됨!";
+            setTimeout(function(){document.body.removeChild(pbg);},1000);
+          });
+        } else {
+          var ta=document.createElement("textarea");
+          ta.value=text;document.body.appendChild(ta);ta.select();
+          document.execCommand("copy");document.body.removeChild(ta);
+          cbtn.textContent="✅ 복사됨!";
+          setTimeout(function(){document.body.removeChild(pbg);},1000);
+        }
+      };
+      pinner.appendChild(cbtn);
+      pbg.appendChild(pinner);
+      document.body.appendChild(pbg);
+    };
+
+    // 복사 버튼
+    var copyBtn=h("div",{style:"font-size:11px;color:#4a9eff;font-weight:700;cursor:pointer;padding:4px 10px;border:1px solid #4a9eff44;border-radius:8px;background:#4a9eff11"},"📋 내일 복사");
+    copyBtn.onclick=function(){
+      var line=makeTomorrowText();
+      if(navigator.clipboard){
+        navigator.clipboard.writeText(line).then(function(){
+          copyBtn.textContent="✅ 복사됨!";
+          setTimeout(function(){copyBtn.textContent="📋 내일 복사";},2000);
+        });
+      } else {
+        var ta=document.createElement("textarea");
+        ta.value=line;document.body.appendChild(ta);ta.select();
+        document.execCommand("copy");document.body.removeChild(ta);
+        copyBtn.textContent="✅ 복사됨!";
+        setTimeout(function(){copyBtn.textContent="📋 내일 복사";},2000);
+      }
+    };
+    var btnRow=h("div",{style:"display:flex;gap:6px"});
+    btnRow.appendChild(previewBtn);
+    btnRow.appendChild(copyBtn);
+    swHead.appendChild(btnRow);
+  }
+  wrap.appendChild(swHead);
   var tw=h("div",{className:"tw"});
   var tbl=document.createElement("table");
 
@@ -615,10 +781,12 @@ function renderTable(sched,wk,wd,cd,merged){
       }
 
       if(day.isSun){
-        if(site.key==="jad"){
+        if(site.key==="sunw"){
           var m=day.jad||[];
           td.style.color="#ffd93d";
           td.innerHTML=m.map(toNum).join(" ")||"-";
+        } else if(site.key==="jad"){
+          td.innerHTML="<span style='color:#2a2a3a'>-</span>";
         } else if(site.key==="rest"){
           var m=day.rest||[];
           td.style.color="#888";
@@ -633,7 +801,7 @@ function renderTable(sched,wk,wd,cd,merged){
         row.appendChild(td);return;
       }
 
-      var isEmpty=(site.key==="yac"&&!day.hasCar)||(site.key==="rest"&&day.hasCar)||(site.key==="jad"&&!day.hasCar);
+      var isEmpty=(site.key==="yac"&&!day.hasCar)||(site.key==="rest"&&day.hasCar)||(site.key==="jad"&&!day.hasCar)||(site.key==="sunw"&&!day.isSun);
       var members=day[site.key]||[];
       if(isEmpty||members.length===0){
         td.innerHTML="<span style='color:#2a2a3a'>-</span>";
