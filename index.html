@@ -101,6 +101,11 @@ td.site-td{padding:8px;font-weight:700;font-size:11px;background:#13132a;positio
 <body>
 <div id="app"></div>
 <script>
+// 최초 접속시 자동 강제 새로고침 1회
+if(!sessionStorage.getItem('refreshed')){
+  sessionStorage.setItem('refreshed','1');
+  location.reload(true);
+}
 var WORKERS=["이원훈","장형규","조현철","박진호","홍인석","하정남","황정호","김현진","전창범","오규종","김경훈","정철수","황인태","안찬범","김상원","이동현","김태민","김성환","김세영","홍원진","이재일","이준영","김태호","김택성","채관기","김재원","장병숙","윤광덕","박성기"];
 var N=WORKERS.length;
 var KR=["일","월","화","수","목","금","토"];
@@ -388,7 +393,7 @@ function render(){
   // HEADER
   var hdr=h("div",{className:"header"});
   var htitle=h("div",{className:"header-title"});
-  htitle.appendChild(h("div",{className:"header-sub"},"FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v5.9</span>"));
+  var subEl=document.createElement("div");subEl.className="header-sub";subEl.innerHTML="FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v5.9</span> <span onclick='location.reload(true)' style='color:#ffd93d;font-size:12px;cursor:pointer;margin-left:8px'>🔄</span>";htitle.appendChild(subEl);
   htitle.appendChild(h("div",{className:"header-date"},"오늘 · "+fmtToday()));
   hdr.appendChild(htitle);
 
