@@ -239,7 +239,13 @@ function calcSchedule(carDays,dayExcl,firstWorker,sundayCount,weekDays){
       prevDae=dae;prevSun=sun;prevYac=yac;prevActBib=bib;
     } else {
       if(sundayCount>0&&weekDays&&weekDays[d]==="일"){
-        var li=WORKERS.indexOf(prevActBib[prevActBib.length-1]);
+        // 일요근무도 차없음 연속 규칙: 전날 대양1번 앞번호 기준
+        var li;
+        if(prevCar===false){
+          li=(WORKERS.indexOf(prevDae[0])-1+N)%N;
+        } else {
+          li=WORKERS.indexOf(prevActBib[prevActBib.length-1]);
+        }
         var sw=pickRev(sundayCount,li,excl).team;
         var rest=avail.filter(function(w){return sw.indexOf(w)<0&&bib.indexOf(w)<0;});
         result.push({hasCar:false,dae:[],sun:[],yac:[],jay:[],jad:sw,bib:bib,rest:rest,excl:exclMap,isSun:true,swTeam:sw});
@@ -269,7 +275,17 @@ function calcSchedule(carDays,dayExcl,firstWorker,sundayCount,weekDays){
         prevActBib=restAll;
         prevSun=[];prevYac=[];
       } else {
-        var li=WORKERS.indexOf(prevActBib[prevActBib.length-1]);
+        // 차없음: 당일 대양1번 앞번호가 비번 말번
+        // 전날이 차있음이면 prevActBib 말번 사용
+        // 전날도 차없음이면 전날 대양1번 앞번호 사용
+        var li;
+        if(prevCar===false){
+          // 연속 차없음: 전날 대양 첫번째 앞번호
+          li=(WORKERS.indexOf(prevDae[0])-1+N)%N;
+        } else {
+          // 차있음 다음 차없음: 전날 비번 말번
+          li=WORKERS.indexOf(prevActBib[prevActBib.length-1]);
+        }
         var rJ=pickRev(4,li,excl),rS=pickRev(4,rJ.next,excl),rD=pickRev(6,rS.next,excl);
         var jay=rJ.team,sun=rS.team,dae=rD.team;
         var assigned=dae.concat(sun,jay,bib);
@@ -393,7 +409,7 @@ function render(){
   // HEADER
   var hdr=h("div",{className:"header"});
   var htitle=h("div",{className:"header-title"});
-  var subEl=document.createElement("div");subEl.className="header-sub";subEl.innerHTML="FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v5.9</span> <span onclick='location.reload(true)' style='color:#ffd93d;font-size:12px;cursor:pointer;margin-left:8px'>🔄</span>";htitle.appendChild(subEl);
+  var subEl=document.createElement("div");subEl.className="header-sub";subEl.innerHTML="FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v6.1</span> <span onclick='location.reload(true)' style='color:#ffd93d;font-size:12px;cursor:pointer;margin-left:8px'>🔄</span>";htitle.appendChild(subEl);
   htitle.appendChild(h("div",{className:"header-date"},"오늘 · "+fmtToday()));
   hdr.appendChild(htitle);
 
