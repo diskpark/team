@@ -123,16 +123,42 @@ firebase.initializeApp(firebaseConfig);
 var db = firebase.database();
 var TODAY = new Date().toISOString().slice(0,10); // YYYY-MM-DD
 
-// Firebase에서 오늘 설정 불러오기
+// Firebase 실시간 리스너
+var fbListening = false;
+function startFirebaseListener(){
+  if(fbListening) return;
+  fbListening = true;
+  db.ref('schedule/'+TODAY).on('value', function(snap){
+    var data = snap.val();
+    if(!data) return;
+    var changed = false;
+    var newState = {};
+    // carDays
+    if(data.carDays){
+      var cur = JSON.stringify(state.carDays);
+      var next = JSON.stringify(data.carDays);
+      if(cur !== next){ newState.carDays = data.carDays; changed = true; }
+    }
+    // firstWorker
+    if(data.firstWorker && data.firstWorker !== state.firstWorker){
+      newState.firstWorker = data.firstWorker; changed = true;
+    }
+    // dayExcludes
+    if(data.dayExcludes){
+      var cur = JSON.stringify(state.dayExcludes);
+      var next = JSON.stringify(data.dayExcludes);
+      if(cur !== next){ newState.dayExcludes = data.dayExcludes; changed = true; }
+    }
+    if(changed) setState(newState);
+  });
+}
+
 function loadFromFirebase(callback){
   db.ref('schedule/'+TODAY).once('value').then(function(snap){
     var data = snap.val();
     if(data){
-      // carDays
       if(data.carDays) localStorage.setItem('carPlan', JSON.stringify({date:new Date().toDateString(), days:data.carDays}));
-      // firstWorker
       if(data.firstWorker) localStorage.setItem('firstWorker', JSON.stringify({date:new Date().toDateString(), name:data.firstWorker}));
-      // dayExcludes
       if(data.dayExcludes) localStorage.setItem('dayExcludes', JSON.stringify({date:new Date().toDateString(), data:data.dayExcludes}));
     }
     if(callback) callback();
@@ -148,13 +174,15 @@ function saveToFirebase(patch){
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').catch(function(){});
 }
-// 최초 접속시 Firebase에서 오늘 설정 불러오기
+// 최초 접속시 Firebase에서 오늘 설정 불러오기 + 실시간 리스너 시작
 if(!sessionStorage.getItem('refreshed')){
   sessionStorage.setItem('refreshed','1');
   loadFromFirebase(function(){ location.reload(); });
-} else if(!sessionStorage.getItem('fbLoaded')){
-  sessionStorage.setItem('fbLoaded','1');
-  loadFromFirebase(function(){ if(typeof render==='function') render(); });
+} else {
+  // 실시간 리스너 시작 (render 이후)
+  window.addEventListener('load', function(){
+    setTimeout(startFirebaseListener, 500);
+  });
 }
 var WORKERS=["이원훈","장형규","조현철","박진호","홍인석","하정남","황정호","김현진","전창범","오규종","김경훈","정철수","황인태","안찬범","김상원","이동현","김태민","김성환","김세영","홍원진","이재일","이준영","김태호","김택성","채관기","김재원","장병숙","윤광덕","박성기"];
 var N=WORKERS.length;
@@ -458,7 +486,7 @@ function render(){
   // HEADER
   var hdr=h("div",{className:"header"});
   var htitle=h("div",{className:"header-title"});
-  var subEl=document.createElement("div");subEl.className="header-sub";subEl.innerHTML="FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v6.3</span> <span onclick='location.reload(true)' style='color:#ffd93d;font-size:12px;cursor:pointer;margin-left:8px'>🔄</span>";htitle.appendChild(subEl);
+  var subEl=document.createElement("div");subEl.className="header-sub";subEl.innerHTML="FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v6.4</span> <span onclick='location.reload(true)' style='color:#ffd93d;font-size:12px;cursor:pointer;margin-left:8px'>🔄</span>";htitle.appendChild(subEl);
   htitle.appendChild(h("div",{className:"header-date"},"오늘 · "+fmtToday()));
   hdr.appendChild(htitle);
 
