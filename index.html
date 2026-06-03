@@ -11,6 +11,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>지게차 주간 근무표</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#0d0d1a;color:#e0e0f0;font-family:'Noto Sans KR',sans-serif;min-height:100vh}
@@ -107,14 +109,52 @@ td.site-td{padding:8px;font-weight:700;font-size:11px;background:#13132a;positio
 <body>
 <div id="app"></div>
 <script>
+// Firebase 초기화
+var firebaseConfig = {
+  apiKey: "AIzaSyAQzhhO8NbhvUkNOjnjvVJgNNN4vx8KRXU",
+  authDomain: "team-order-1cfb0.firebaseapp.com",
+  databaseURL: "https://team-order-1cfb0-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "team-order-1cfb0",
+  storageBucket: "team-order-1cfb0.firebasestorage.app",
+  messagingSenderId: "1083754540996",
+  appId: "1:1083754540996:web:68dae3bb04806395b47e91"
+};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.database();
+var TODAY = new Date().toISOString().slice(0,10); // YYYY-MM-DD
+
+// Firebase에서 오늘 설정 불러오기
+function loadFromFirebase(callback){
+  db.ref('schedule/'+TODAY).once('value').then(function(snap){
+    var data = snap.val();
+    if(data){
+      // carDays
+      if(data.carDays) localStorage.setItem('carPlan', JSON.stringify({date:new Date().toDateString(), days:data.carDays}));
+      // firstWorker
+      if(data.firstWorker) localStorage.setItem('firstWorker', JSON.stringify({date:new Date().toDateString(), name:data.firstWorker}));
+      // dayExcludes
+      if(data.dayExcludes) localStorage.setItem('dayExcludes', JSON.stringify({date:new Date().toDateString(), data:data.dayExcludes}));
+    }
+    if(callback) callback();
+  }).catch(function(){ if(callback) callback(); });
+}
+
+// Firebase에 오늘 설정 저장 (팀장만)
+function saveToFirebase(patch){
+  db.ref('schedule/'+TODAY).update(patch);
+}
+
 // PWA Service Worker 등록
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').catch(function(){});
 }
-// 최초 접속시 자동 강제 새로고침 1회
+// 최초 접속시 Firebase에서 오늘 설정 불러오기
 if(!sessionStorage.getItem('refreshed')){
   sessionStorage.setItem('refreshed','1');
-  location.reload(true);
+  loadFromFirebase(function(){ location.reload(); });
+} else if(!sessionStorage.getItem('fbLoaded')){
+  sessionStorage.setItem('fbLoaded','1');
+  loadFromFirebase(function(){ if(typeof render==='function') render(); });
 }
 var WORKERS=["이원훈","장형규","조현철","박진호","홍인석","하정남","황정호","김현진","전창범","오규종","김경훈","정철수","황인태","안찬범","김상원","이동현","김태민","김성환","김세영","홍원진","이재일","이준영","김태호","김택성","채관기","김재원","장병숙","윤광덕","박성기"];
 var N=WORKERS.length;
@@ -418,7 +458,7 @@ function render(){
   // HEADER
   var hdr=h("div",{className:"header"});
   var htitle=h("div",{className:"header-title"});
-  var subEl=document.createElement("div");subEl.className="header-sub";subEl.innerHTML="FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v6.2</span> <span onclick='location.reload(true)' style='color:#ffd93d;font-size:12px;cursor:pointer;margin-left:8px'>🔄</span>";htitle.appendChild(subEl);
+  var subEl=document.createElement("div");subEl.className="header-sub";subEl.innerHTML="FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v6.3</span> <span onclick='location.reload(true)' style='color:#ffd93d;font-size:12px;cursor:pointer;margin-left:8px'>🔄</span>";htitle.appendChild(subEl);
   htitle.appendChild(h("div",{className:"header-date"},"오늘 · "+fmtToday()));
   hdr.appendChild(htitle);
 
@@ -1002,9 +1042,11 @@ function selectFirstWorker(name){
     if(hist.length>2)hist=hist.slice(0,2);
     localStorage.setItem('dayHistory',JSON.stringify(hist));
     localStorage.setItem('firstWorker',JSON.stringify({date:new Date().toDateString(),name:newName}));
+    saveToFirebase({firstWorker:newName});
     setState({firstWorker:newName,history:hist});
   } else {
     localStorage.setItem('firstWorker',JSON.stringify({date:new Date().toDateString(),name:newName}));
+    saveToFirebase({firstWorker:newName});
     setState({firstWorker:newName});
   }
 }
@@ -1069,6 +1111,7 @@ function toggleCar(idx,val){
   var c=state.carDays.slice();
   c[idx]=c[idx]===val?null:val;
   localStorage.setItem('carPlan',JSON.stringify({date:new Date().toDateString(),days:c}));
+  saveToFirebase({carDays:c});
   setState({carDays:c});
 }
 function toggleExcl(idx,name){
@@ -1083,6 +1126,7 @@ function toggleExcl(idx,name){
     return u;
   });
   localStorage.setItem('dayExcludes',JSON.stringify({date:new Date().toDateString(),data:d}));
+  saveToFirebase({dayExcludes:d});
   setState({dayExcludes:d});
 }
 
