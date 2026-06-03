@@ -47,4 +47,15 @@ jobs:
               print(f'{date_str} 오류: {e}')
               days.append({'date':str(d.month)+'/'+str(d.day)+'('+KR_DAY[d.weekday()]+')','ymd':date_str,'tides':[]})
 
-          with open('tide.json','w',e
+          with open('tide.json','w',encoding='utf-8') as f:
+            json.dump({'updated':today.strftime('%Y-%m-%d'),'days':days},f,ensure_ascii=False,indent=2)
+          print('완료')
+          PYEOF
+
+      - name: Commit tide.json
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add tide.json
+          git diff --staged --quiet || git commit -m "Update tide data $(date '+%Y-%m-%d')"
+          git push
