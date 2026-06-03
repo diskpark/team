@@ -30,7 +30,7 @@ jobs:
           for i in range(7):
             d = today + timedelta(days=i)
             date_str = d.strftime('%Y%m%d')
-            url = f'https://www.khoa.go.kr/api/oceangrid/tideObsPre/search.do?ServiceKey={KEY_ENC}&ObsCode={OBS}&Date={date_str}&ResultType=json'
+            url = f'https://www.khoa.go.kr/api/oceangrid/tideObsPreTab/search.do?ServiceKey={KEY_ENC}&ObsCode={OBS}&Date={date_str}&ResultType=json'
             
             try:
               with urllib.request.urlopen(url, timeout=10) as r:
