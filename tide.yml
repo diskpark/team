@@ -1,0 +1,76 @@
+name: Update Tide Data
+
+on:
+  schedule:
+    - cron: '0 16 * * *'  # KST 새벽 1시 = UTC 16시
+  workflow_dispatch:  # 수동 실행 가능
+
+jobs:
+  update-tide:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Fetch tide data
+        run: |
+          python3 << 'PYEOF'
+          import urllib.request
+          import json
+          from datetime import datetime, timedelta
+          import urllib.parse
+
+          KEY = 'WDDx2E/gXsdKJWLBKNvC/g=='
+          KEY_ENC = urllib.parse.quote(KEY, safe='')
+          OBS = 'DT_0009'
+          KR_DAY = ['일','월','화','수','목','금','토']
+
+          days = []
+          today = datetime.now()
+
+          for i in range(7):
+            d = today + timedelta(days=i)
+            date_str = d.strftime('%Y%m%d')
+            url = f'https://www.khoa.go.kr/api/oceangrid/tideObsPre/search.do?ServiceKey={KEY_ENC}&ObsCode={OBS}&Date={date_str}&ResultType=json'
+            
+            try:
+              with urllib.request.urlopen(url, timeout=10) as r:
+                data = json.loads(r.read())
+              
+              tides = []
+              if data.get('result') and data['result'].get('data'):
+                for t in data['result']['data']:
+                  if t.get('hl_code') in ['0','1']:
+                    tides.append({
+                      'type': '고조' if t['hl_code']=='1' else '저조',
+                      'time': t['tph_time'][:5],
+                      'level': int(t['tph_level'])
+                    })
+              
+              days.append({
+                'date': f"{d.month}/{d.day}({KR_DAY[d.weekday()]})",
+                'ymd': date_str,
+                'tides': tides
+              })
+              print(f"{date_str}: {len(tides)}개 조석")
+            except Exception as e:
+              print(f"{date_str} 오류: {e}")
+              days.append({'date': f"{d.month}/{d.day}({KR_DAY[d.weekday()]})", 'ymd': date_str, 'tides': []})
+
+          result = {
+            'updated': today.strftime('%Y-%m-%d'),
+            'days': days
+          }
+
+          with open('tide.json', 'w', encoding='utf-8') as f:
+            json.dump(result, f, ensure_ascii=False, indent=2)
+
+          print('tide.json 저장 완료')
+          PYEOF
+
+      - name: Commit tide.json
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add tide.json
+          git diff --staged --quiet || git commit -m "Update tide data $(date '+%Y-%m-%d')"
+          git push
