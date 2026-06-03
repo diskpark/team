@@ -20,7 +20,7 @@ jobs:
           import urllib.parse
 
           KEY = 'fb0e643141b9e4930ad8df0ebb1324c952b6d4ce8e89dbea8f1957d0afb3a18a'
-          OBS = 'DT_0009'
+          OBS = 'DT_0007'
           KR_DAY = ['일','월','화','수','목','금','토']
 
           days = []
