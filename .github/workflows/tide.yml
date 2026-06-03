@@ -18,7 +18,7 @@ jobs:
           from datetime import datetime, timedelta, timezone
 
           KEY = 'fb0e643141b9e4930ad8df0ebb1324c952b6d4ce8e89dbea8f1957d0afb3a18a'
-          KR_DAY = ['일','월','화','수','목','금','토']
+          KR_DAY = ['월','화','수','목','금','토','일']
           KST = timezone(timedelta(hours=9))
           days = []
           today = datetime.now(KST)
