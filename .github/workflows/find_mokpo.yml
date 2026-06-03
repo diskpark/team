@@ -1,0 +1,26 @@
+name: Find Mokpo Code
+
+on:
+  workflow_dispatch:
+
+jobs:
+  find:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Find obsCode
+        run: |
+          python3 << 'PYEOF'
+          import urllib.request, json
+          KEY = 'fb0e643141b9e4930ad8df0ebb1324c952b6d4ce8e89dbea8f1957d0afb3a18a'
+          for n in range(1, 100):
+            code = 'DT_'+str(n).zfill(4)
+            url = f'https://apis.data.go.kr/1192136/tideFcstHghLw/GetTideFcstHghLwApiService?serviceKey={KEY}&pageNo=1&numOfRows=1&type=json&obsCode={code}&reqDate=20260603'
+            try:
+              with urllib.request.urlopen(url, timeout=5) as r:
+                data = json.loads(r.read())
+              if data.get('body'):
+                name = data['body']['items']['item'][0]['obsvtrNm']
+                print(f'{code}: {name}')
+            except Exception as e:
+              pass
+          PYEOF
