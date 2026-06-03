@@ -494,7 +494,7 @@ function render(){
   var htitle=h("div",{className:"header-title"});
   var subEl=document.createElement("div");
 subEl.className="header-sub";
-subEl.innerHTML="FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v7.0</span>";
+subEl.innerHTML="FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v7.1</span>";
 var reloadBtn=document.createElement("span");
 reloadBtn.style.cssText="color:#ffd93d;font-size:14px;cursor:pointer;margin-left:8px";
 reloadBtn.textContent="🔄";
@@ -1159,84 +1159,105 @@ function renderSettings(){
   return bg;
 }
 
-// 목포 물때 데이터 로드 (JSONP 방식)
-var tideCallbacks={};
-function loadTideJsonp(url, cb){
-  var cbName='tideCallback_'+Date.now()+'_'+Math.random().toString(36).slice(2);
-  tideCallbacks[cbName]=cb;
-  window[cbName]=function(data){cb(data);delete window[cbName];};
-  var s=document.createElement('script');
-  s.src=url+'&callback='+cbName;
-  s.onerror=function(){cb(null);delete window[cbName];};
-  document.head.appendChild(s);
-  setTimeout(function(){if(window[cbName]){cb(null);delete window[cbName];}},5000);
+// 목포 조화상수 기반 물때 계산
+var MOKPO = [
+  {speed:28.9841042, amp:155.9, phase:31.4},
+  {speed:30.0000000, amp:52.7,  phase:57.6},
+  {speed:28.4397295, amp:28.8,  phase:10.3},
+  {speed:30.0821373, amp:14.4,  phase:58.2},
+  {speed:15.0410686, amp:26.3,  phase:167.1},
+  {speed:13.9430356, amp:20.5,  phase:148.3},
+  {speed:14.9589314, amp:8.4,   phase:165.2},
+  {speed:13.3986609, amp:4.1,   phase:127.3},
+  {speed:57.9682084, amp:9.8,   phase:120.5},
+  {speed:58.9841042, amp:7.2,   phase:147.3}
+];
+var MSL_MOKPO = 225;
+
+function calcTideLevel(dateObj){
+  var base=new Date('2000-01-01T00:00:00Z');
+  var hours=(dateObj-base)/3600000;
+  var level=MSL_MOKPO;
+  for(var i=0;i<MOKPO.length;i++){
+    var c=MOKPO[i];
+    level+=c.amp*Math.cos((c.speed*hours-c.phase)*Math.PI/180);
+  }
+  return Math.round(level);
+}
+
+function findHighLow(date){
+  var results=[];
+  var startMs=new Date(date.getFullYear(),date.getMonth(),date.getDate(),0,0,0).getTime();
+  var prevLevel=calcTideLevel(new Date(startMs));
+  var prevDiff=0;
+  for(var min=1;min<=24*60;min++){
+    var t=new Date(startMs+min*60000);
+    var level=calcTideLevel(t);
+    var diff=level-prevLevel;
+    if(prevDiff>0&&diff<=0) results.push({type:'만조',ms:startMs+(min-1)*60000,level:prevLevel});
+    else if(prevDiff<0&&diff>=0) results.push({type:'간조',ms:startMs+(min-1)*60000,level:prevLevel});
+    prevLevel=level; prevDiff=diff;
+  }
+  return results;
+}
+
+function getTideNum(date){
+  var base=new Date('2026-01-29T00:00:00Z');
+  var lunarAge=((date-base)/(1000*60*60*24*29.53059)%1+1)%1*29.53;
+  var ld=Math.floor(lunarAge)+1;
+  var num=ld<=15?ld:30-ld;
+  var labels={1:'1물',2:'2물',3:'3물',4:'4물',5:'5물',6:'6물',
+    7:'조금',8:'조금',9:'무시',10:'1물',11:'2물',12:'3물',
+    13:'사리',14:'사리',15:'한사리'};
+  return {num:num,label:labels[num]||num+'물'};
 }
 
 function loadTideData(){
-  setState({tidePopup:true, tideData:null});
-  var today=new Date();
-  var dates=[];
-  for(var i=0;i<7;i++){
-    var d=new Date(today);
-    d.setDate(today.getDate()+i);
-    var ymd=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
-    dates.push({date:d, ymd:ymd});
-  }
-  var results=[];
-  var done=0;
-  dates.forEach(function(item,idx){
-    var url='https://www.khoa.go.kr/api/oceangrid/tideObsPre/search.do?ServiceKey=WDDx2E%2FgXsdKJWLBKNvC%2Fg%3D%3D&ObsCode=DT_0009&Date='+item.ymd+'&ResultType=jsonp';
-    results[idx]={date:item.date, ymd:item.ymd, data:null};
-    loadTideJsonp(url, function(data){
-      results[idx].data=data;
-      done++;
-      if(done===dates.length) setState({tideData:results.slice()});
-    });
-  });
+  setState({tidePopup:true,tideData:'ready'});
 }
 
 function renderTidePopup(){
   var KRD=["일","월","화","수","목","금","토"];
   var bg=h("div",{className:"tide-popup-bg"});
-  bg.onclick=function(){setState({tidePopup:false});};
+  bg.onclick=function(){setState({tidePopup:false,tideData:null});};
   var inner=h("div",{className:"tide-popup"});
   inner.onclick=function(e){e.stopPropagation();};
   var phead=h("div",{style:"display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"});
   phead.appendChild(h("div",{style:"font-size:16px;font-weight:900;color:#fff"},"🌊 목포 물때표"));
   var cls=h("div",{style:"color:#555;font-size:20px;cursor:pointer"},"✕");
-  cls.onclick=function(){setState({tidePopup:false});};
+  cls.onclick=function(){setState({tidePopup:false,tideData:null});};
   phead.appendChild(cls);
   inner.appendChild(phead);
 
-  if(!state.tideData){
-    inner.appendChild(h("div",{style:"text-align:center;color:#888;padding:20px"},"로딩중..."));
-  } else {
-    state.tideData.forEach(function(item){
-      var row=h("div",{className:"tide-row"});
-      var d=item.date;
-      var isWe=d.getDay()===0||d.getDay()===6;
-      var dateEl=h("div",{className:"tide-date",style:"color:"+(isWe?"#ff6b6b":"#888")});
-      dateEl.textContent=(d.getMonth()+1)+"/"+(d.getDate())+"("+KRD[d.getDay()]+")";
-      row.appendChild(dateEl);
+  var today=new Date();
+  for(var i=0;i<7;i++){
+    var d=new Date(today.getFullYear(),today.getMonth(),today.getDate()+i);
+    var info=getTideNum(d);
+    var tides=findHighLow(d);
+    var isWe=d.getDay()===0||d.getDay()===6;
 
-      if(!item.data||!item.data.result||!item.data.result.data){
-        row.appendChild(h("div",{style:"color:#555;font-size:12px"},"데이터 없음"));
-      } else {
-        var records=item.data.result.data;
-        // 만조/간조 필터
-        var tides=records.filter(function(r){return r.hl_code==="1"||r.hl_code==="0";});
-        var timesEl=h("div",{className:"tide-times"});
-        tides.forEach(function(t){
-          var isHigh=t.hl_code==="1";
-          var span=document.createElement("span");
-          span.style.cssText="display:inline-block;margin-right:10px;color:"+(isHigh?"#4a9eff":"#ff9f7f");
-          span.textContent=(isHigh?"▲":"▽")+" "+t.tph_time.slice(0,5)+" "+t.tph_level+"cm";
-          timesEl.appendChild(span);
-        });
-        row.appendChild(timesEl);
-      }
-      inner.appendChild(row);
+    var row=h("div",{className:"tide-row"});
+    var dateEl=h("div",{className:"tide-date",style:"color:"+(isWe?"#ff6b6b":"#888")});
+    dateEl.textContent=(d.getMonth()+1)+"/"+(d.getDate())+"("+KRD[d.getDay()]+")";
+    row.appendChild(dateEl);
+
+    var numEl=h("div",{className:"tide-num",style:"color:"+(info.num>=13?"#ff6b6b":info.num<=2?"#4a9eff":info.label==="조금"||info.label==="무시"?"#888":"#ffd93d")});
+    numEl.textContent=info.label;
+    row.appendChild(numEl);
+
+    var timesEl=h("div",{className:"tide-times"});
+    tides.forEach(function(t){
+      var kst=new Date(t.ms+9*3600000);
+      var hh=String(kst.getUTCHours()).padStart(2,'0');
+      var mm=String(kst.getUTCMinutes()).padStart(2,'0');
+      var isHigh=t.type==='만조';
+      var span=document.createElement("span");
+      span.style.cssText="display:inline-block;margin-right:10px;color:"+(isHigh?"#4a9eff":"#ff9f7f");
+      span.textContent=(isHigh?"▲":"▽")+" "+hh+":"+mm+" "+t.level+"cm";
+      timesEl.appendChild(span);
     });
+    row.appendChild(timesEl);
+    inner.appendChild(row);
   }
   bg.appendChild(inner);
   return bg;
