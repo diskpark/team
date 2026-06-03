@@ -494,7 +494,7 @@ function render(){
   var htitle=h("div",{className:"header-title"});
   var subEl=document.createElement("div");
 subEl.className="header-sub";
-subEl.innerHTML="FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v7.1</span>";
+subEl.innerHTML="FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v7.2</span>";
 var reloadBtn=document.createElement("span");
 reloadBtn.style.cssText="color:#ffd93d;font-size:14px;cursor:pointer;margin-left:8px";
 reloadBtn.textContent="🔄";
@@ -1186,17 +1186,44 @@ function calcTideLevel(dateObj){
 }
 
 function findHighLow(date){
+  var base=new Date('2000-01-01T00:00:00Z');
+  // KST 자정 기준
+  var startMs=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate())-9*3600000).getTime();
+  // 5분 간격 샘플링
+  var samples=[];
+  for(var m=0;m<=24*60;m+=5){
+    var ms=startMs+m*60000;
+    var h=(ms-base.getTime())/3600000;
+    var lv=MSL_MOKPO;
+    for(var i=0;i<MOKPO.length;i++) lv+=MOKPO[i].amp*Math.cos((MOKPO[i].speed*h-MOKPO[i].phase)*Math.PI/180);
+    samples.push({ms:ms,level:lv});
+  }
   var results=[];
-  var startMs=new Date(date.getFullYear(),date.getMonth(),date.getDate(),0,0,0).getTime();
-  var prevLevel=calcTideLevel(new Date(startMs));
-  var prevDiff=0;
-  for(var min=1;min<=24*60;min++){
-    var t=new Date(startMs+min*60000);
-    var level=calcTideLevel(t);
-    var diff=level-prevLevel;
-    if(prevDiff>0&&diff<=0) results.push({type:'만조',ms:startMs+(min-1)*60000,level:prevLevel});
-    else if(prevDiff<0&&diff>=0) results.push({type:'간조',ms:startMs+(min-1)*60000,level:prevLevel});
-    prevLevel=level; prevDiff=diff;
+  for(var i=1;i<samples.length-1;i++){
+    var prev=samples[i-1].level,cur=samples[i].level,next=samples[i+1].level;
+    if(cur>prev&&cur>next){
+      // 고조 정밀화
+      var pMs=samples[i].ms,pLv=cur;
+      for(var dm=-4;dm<=4;dm++){
+        var t=samples[i].ms+dm*60000;
+        var h2=(t-base.getTime())/3600000;
+        var lv2=MSL_MOKPO;
+        for(var j=0;j<MOKPO.length;j++) lv2+=MOKPO[j].amp*Math.cos((MOKPO[j].speed*h2-MOKPO[j].phase)*Math.PI/180);
+        if(lv2>pLv){pLv=lv2;pMs=t;}
+      }
+      results.push({type:'고조',ms:pMs,level:Math.round(pLv)});
+    } else if(cur<prev&&cur<next){
+      // 저조 정밀화
+      var pMs=samples[i].ms,pLv=cur;
+      for(var dm=-4;dm<=4;dm++){
+        var t=samples[i].ms+dm*60000;
+        var h2=(t-base.getTime())/3600000;
+        var lv2=MSL_MOKPO;
+        for(var j=0;j<MOKPO.length;j++) lv2+=MOKPO[j].amp*Math.cos((MOKPO[j].speed*h2-MOKPO[j].phase)*Math.PI/180);
+        if(lv2<pLv){pLv=lv2;pMs=t;}
+      }
+      results.push({type:'저조',ms:pMs,level:Math.round(pLv)});
+    }
   }
   return results;
 }
@@ -1250,10 +1277,10 @@ function renderTidePopup(){
       var kst=new Date(t.ms+9*3600000);
       var hh=String(kst.getUTCHours()).padStart(2,'0');
       var mm=String(kst.getUTCMinutes()).padStart(2,'0');
-      var isHigh=t.type==='만조';
-      var span=document.createElement("span");
-      span.style.cssText="display:inline-block;margin-right:10px;color:"+(isHigh?"#4a9eff":"#ff9f7f");
-      span.textContent=(isHigh?"▲":"▽")+" "+hh+":"+mm+" "+t.level+"cm";
+      var isHigh=t.type==='고조';
+      var span=document.createElement("div");
+      span.style.cssText="display:inline-block;margin-right:12px;margin-bottom:2px;color:"+(isHigh?"#4a9eff":"#ff9f7f");
+      span.textContent=(isHigh?"▲고":"▽저")+" "+hh+":"+mm+" ("+t.level+"cm)";
       timesEl.appendChild(span);
     });
     row.appendChild(timesEl);
