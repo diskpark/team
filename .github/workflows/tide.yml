@@ -21,7 +21,7 @@ jobs:
 
           KEY = 'WDDx2E/gXsdKJWLBKNvC/g=='
           KEY_ENC = urllib.parse.quote(KEY, safe='')
-          OBS = 'DT_0009'
+          OBS = 'DT_0007'
           KR_DAY = ['일','월','화','수','목','금','토']
 
           days = []
