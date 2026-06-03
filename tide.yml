@@ -9,7 +9,7 @@ jobs:
   update-tide:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Fetch tide data
         run: |
@@ -17,7 +17,6 @@ jobs:
           import urllib.request
           import json
           from datetime import datetime, timedelta
-          import urllib.parse
 
           KEY = 'fb0e643141b9e4930ad8df0ebb1324c952b6d4ce8e89dbea8f1957d0afb3a18a'
           OBS = 'DT_0007'
@@ -29,29 +28,28 @@ jobs:
           for i in range(7):
             d = today + timedelta(days=i)
             date_str = d.strftime('%Y%m%d')
-            url = f'https://apis.data.go.kr/1192136/tideFcstHghLw?serviceKey={KEY}&obsCode={OBS}&date={date_str}&returnType=json'
-            
+            url = 'https://apis.data.go.kr/1192136/tideFcstHghLw/GetTideFcstHghLwApiService?serviceKey='+KEY+'&pageNo=1&numOfRows=10&type=json&obsCode='+OBS+'&reqDate='+date_str
+
             try:
               with urllib.request.urlopen(url, timeout=10) as r:
                 data = json.loads(r.read())
-              
+
               tides = []
-              items = data.get('result',{}).get('data', data.get('items',{}).get('item',[]))
-              if isinstance(items, list):
-                for t in items:
-                  hl = t.get('hl_code', t.get('hlCode',''))
-                  time = t.get('tph_time', t.get('tphTime',''))[:5]
-                  level = t.get('tph_level', t.get('tphLevel',0))
-                  if hl in ['1','H','고조']:
-                    tides.append({'type':'고조','time':time,'level':int(level)})
-                  elif hl in ['0','L','저조']:
-                    tides.append({'type':'저조','time':time,'level':int(level)})
-              
-              days.append({'date':f"{d.month}/{d.day}({KR_DAY[d.weekday()]})","ymd":date_str,'tides':tides})
-              print(f"{date_str}: {len(tides)}개")
+              if data.get('body') and data['body'].get('items') and data['body']['items'].get('item'):
+                for t in data['body']['items']['item']:
+                  se = t.get('extrSe','')
+                  time = t.get('predcDt','')[11:16]
+                  level = int(t.get('predcTdlvVl', 0))
+                  if se in ['1','3']:
+                    tides.append({'type':'고조','time':time,'level':level})
+                  elif se in ['2','4']:
+                    tides.append({'type':'저조','time':time,'level':level})
+
+              days.append({'date':str(d.month)+'/'+str(d.day)+'('+KR_DAY[d.weekday()]+')','ymd':date_str,'tides':tides})
+              print(date_str+': '+str(len(tides))+'개')
             except Exception as e:
-              print(f"{date_str} 오류: {e}")
-              days.append({'date':f"{d.month}/{d.day}({KR_DAY[d.weekday()]})","ymd":date_str,'tides':[]})
+              print(date_str+' 오류: '+str(e))
+              days.append({'date':str(d.month)+'/'+str(d.day)+'('+KR_DAY[d.weekday()]+')','ymd':date_str,'tides':[]})
 
           with open('tide.json','w',encoding='utf-8') as f:
             json.dump({'updated':today.strftime('%Y-%m-%d'),'days':days},f,ensure_ascii=False,indent=2)
