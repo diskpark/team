@@ -15,11 +15,14 @@ jobs:
         run: |
           python3 << 'PYEOF'
           import urllib.request, json
-          from datetime import datetime, timedelta
+          from datetime import datetime, timedelta, timezone
+
           KEY = 'fb0e643141b9e4930ad8df0ebb1324c952b6d4ce8e89dbea8f1957d0afb3a18a'
           KR_DAY = ['일','월','화','수','목','금','토']
+          KST = timezone(timedelta(hours=9))
           days = []
-          today = datetime.now()
+          today = datetime.now(KST)
+
           for i in range(7):
             d = today + timedelta(days=i)
             date_str = d.strftime('%Y%m%d')
@@ -43,6 +46,7 @@ jobs:
             except Exception as e:
               print(f'{date_str} 오류: {e}')
               days.append({'date':str(d.month)+'/'+str(d.day)+'('+KR_DAY[d.weekday()]+')','ymd':date_str,'tides':[]})
+
           with open('tide.json','w',encoding='utf-8') as f:
             json.dump({'updated':today.strftime('%Y-%m-%d'),'days':days},f,ensure_ascii=False,indent=2)
           print('완료')
