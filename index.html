@@ -311,13 +311,27 @@ function calcSchedule(carDays,dayExcl,firstWorker,sundayCount,weekDays){
         var r1=pickFwd(6-pj.length,cursor,excl);yac=pj.concat(r1.team);cursor=r1.next;
         var r2=pickFwd(4,cursor,excl);jay=r2.team;cursor=r2.next;
       }
-      absRet.forEach(function(ret){if(dae.indexOf(ret)>=0)dae=dae.filter(function(w){return w!==ret;});});
+      // 결근 복귀: 자동차로, 비번 다음순번으로 채우기
+      var jadExtra=[];
+      absRet.forEach(function(ret){
+        if(dae.indexOf(ret)>=0) dae=dae.filter(function(w){return w!==ret;});
+        jadExtra.push(ret);
+        // 비번에서 빠진 자리 다음 순번으로 채우기
+        var lastBibIdx=WORKERS.indexOf(bib[bib.length-1]);
+        var nextIdx=(lastBibIdx+1)%N;
+        while(excl.indexOf(WORKERS[nextIdx])>=0||bib.indexOf(WORKERS[nextIdx])>=0||jadExtra.indexOf(WORKERS[nextIdx])>=0){
+          nextIdx=(nextIdx+1)%N;
+        }
+        bib.push(WORKERS[nextIdx]);
+      });
       vacRet.forEach(function(ret){
         insertOrder(yac,ret);
         if(yac.length>6){var pushed=yac.splice(6,1)[0];insertOrder(jay,pushed);if(jay.length>4)jay.splice(4,1);}
       });
       var assigned=dae.concat(sun,yac,jay,bib);
       var jad=avail.filter(function(w){return assigned.indexOf(w)<0;});
+      // 결근 복귀자를 자동차에 추가
+      jadExtra.forEach(function(ret){if(jad.indexOf(ret)<0)jad.push(ret);});
       result.push({hasCar:true,dae:dae,sun:sun,yac:yac,jay:jay,jad:jad,bib:bib,rest:[],excl:exclMap});
       prevDae=dae;prevSun=sun;prevYac=yac;prevActBib=bib;
     } else {
@@ -371,6 +385,22 @@ function calcSchedule(carDays,dayExcl,firstWorker,sundayCount,weekDays){
         }
         var rJ=pickRev(4,li,excl),rS=pickRev(4,rJ.next,excl),rD=pickRev(6,rS.next,excl);
         var jay=rJ.team,sun=rS.team,dae=rD.team;
+        // 결근 복귀: 제이 말번에 삽입, 초과시 앞으로 밀기
+        absRet.forEach(function(ret){
+          insertOrder(jay,ret);
+          if(jay.length>4){
+            var pushed=jay.shift(); // 1번이 밀려남
+            insertOrder(sun,pushed);
+            if(sun.length>4){
+              var pushed2=sun.shift();
+              insertOrder(dae,pushed2);
+              if(dae.length>6){
+                var pushed3=dae.shift();
+                bib.push(pushed3);
+              }
+            }
+          }
+        });
         var assigned=dae.concat(sun,jay,bib);
         var rest=avail.filter(function(w){return assigned.indexOf(w)<0;});
         result.push({hasCar:false,dae:dae,sun:sun,yac:[],jay:jay,jad:[],bib:bib,rest:rest,excl:exclMap});
@@ -494,7 +524,7 @@ function render(){
   var htitle=h("div",{className:"header-title"});
   var subEl=document.createElement("div");
 subEl.className="header-sub";
-subEl.innerHTML="FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v7.4</span>";
+subEl.innerHTML="FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v7.5</span>";
 var reloadBtn=document.createElement("span");
 reloadBtn.style.cssText="color:#ffd93d;font-size:14px;cursor:pointer;margin-left:8px";
 reloadBtn.textContent="🔄";
