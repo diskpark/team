@@ -11,7 +11,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>지게차 주간 근무표</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#0d0d1a;color:#e0e0f0;font-family:'Noto Sans KR',sans-serif;min-height:100vh}
@@ -48,7 +49,6 @@ body{background:#0d0d1a;color:#e0e0f0;font-family:'Noto Sans KR',sans-serif;min-
 .sun-cnt{font-size:13px;font-weight:700;min-width:20px;text-align:center}
 .vac-btn-wrap{margin-top:10px;text-align:center}
 .vac-btn{display:inline-block;padding:6px 20px;border-radius:20px;background:#ffd93d22;border:1px solid #ffd93d44;color:#ffd93d;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1px}
-
 .content{padding:16px 16px 60px;max-width:540px;margin:0 auto}
 .card{background:#13132a;border-radius:14px;padding:14px;margin-bottom:14px}
 .card-title{font-size:11px;font-weight:700;letter-spacing:2px;margin-bottom:10px}
@@ -123,7 +123,35 @@ firebase.initializeApp(firebaseConfig);
 var db = firebase.database();
 var TODAY = new Date().toISOString().slice(0,10); // YYYY-MM-DD
 
-function startFirebaseListener(){}
+// Firebase 실시간 리스너
+var fbListening = false;
+function startFirebaseListener(){
+  if(fbListening) return;
+  fbListening = true;
+  db.ref('schedule/'+TODAY).on('value', function(snap){
+    var data = snap.val();
+    if(!data) return;
+    var changed = false;
+    var newState = {};
+    // carDays
+    if(data.carDays){
+      var cur = JSON.stringify(state.carDays);
+      var next = JSON.stringify(data.carDays);
+      if(cur !== next){ newState.carDays = data.carDays; changed = true; }
+    }
+    // firstWorker
+    if(data.firstWorker && data.firstWorker !== state.firstWorker){
+      newState.firstWorker = data.firstWorker; changed = true;
+    }
+    // dayExcludes
+    if(data.dayExcludes){
+      var cur = JSON.stringify(state.dayExcludes);
+      var next = JSON.stringify(data.dayExcludes);
+      if(cur !== next){ newState.dayExcludes = data.dayExcludes; changed = true; }
+    }
+    if(changed) setState(newState);
+  });
+}
 
 function loadFromFirebase(callback){
   db.ref('schedule/'+TODAY).once('value').then(function(snap){
@@ -137,14 +165,25 @@ function loadFromFirebase(callback){
   }).catch(function(){ if(callback) callback(); });
 }
 
-function saveToFirebase(patch){}
+// Firebase에 오늘 설정 저장 (팀장만)
+function saveToFirebase(patch){
+  db.ref('schedule/'+TODAY).update(patch);
+}
 
 // PWA Service Worker 등록
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').catch(function(){});
 }
-// 앱 시작
-render();
+// 최초 접속시 Firebase에서 오늘 설정 불러오기 + 실시간 리스너 시작
+if(!sessionStorage.getItem('refreshed')){
+  sessionStorage.setItem('refreshed','1');
+  loadFromFirebase(function(){ location.reload(); });
+} else {
+  // 실시간 리스너 시작 (render 이후)
+  window.addEventListener('load', function(){
+    setTimeout(startFirebaseListener, 500);
+  });
+}
 var WORKERS=["이원훈","장형규","조현철","박진호","홍인석","하정남","황정호","김현진","전창범","오규종","김경훈","정철수","황인태","안찬범","김상원","이동현","김태민","김성환","김세영","홍원진","이재일","이준영","김태호","김택성","채관기","김재원","장병숙","윤광덕","박성기"];
 var N=WORKERS.length;
 var KR=["일","월","화","수","목","금","토"];
@@ -266,27 +305,13 @@ function calcSchedule(carDays,dayExcl,firstWorker,sundayCount,weekDays){
         var r1=pickFwd(6-pj.length,cursor,excl);yac=pj.concat(r1.team);cursor=r1.next;
         var r2=pickFwd(4,cursor,excl);jay=r2.team;cursor=r2.next;
       }
-      // 결근 복귀: 자동차로, 비번 다음순번으로 채우기
-      var jadExtra=[];
-      absRet.forEach(function(ret){
-        if(dae.indexOf(ret)>=0) dae=dae.filter(function(w){return w!==ret;});
-        jadExtra.push(ret);
-        // 비번에서 빠진 자리 다음 순번으로 채우기
-        var lastBibIdx=WORKERS.indexOf(bib[bib.length-1]);
-        var nextIdx=(lastBibIdx+1)%N;
-        while(excl.indexOf(WORKERS[nextIdx])>=0||bib.indexOf(WORKERS[nextIdx])>=0||jadExtra.indexOf(WORKERS[nextIdx])>=0){
-          nextIdx=(nextIdx+1)%N;
-        }
-        bib.push(WORKERS[nextIdx]);
-      });
+      absRet.forEach(function(ret){if(dae.indexOf(ret)>=0)dae=dae.filter(function(w){return w!==ret;});});
       vacRet.forEach(function(ret){
         insertOrder(yac,ret);
         if(yac.length>6){var pushed=yac.splice(6,1)[0];insertOrder(jay,pushed);if(jay.length>4)jay.splice(4,1);}
       });
       var assigned=dae.concat(sun,yac,jay,bib);
       var jad=avail.filter(function(w){return assigned.indexOf(w)<0;});
-      // 결근 복귀자를 자동차에 추가
-      jadExtra.forEach(function(ret){if(jad.indexOf(ret)<0)jad.push(ret);});
       result.push({hasCar:true,dae:dae,sun:sun,yac:yac,jay:jay,jad:jad,bib:bib,rest:[],excl:exclMap});
       prevDae=dae;prevSun=sun;prevYac=yac;prevActBib=bib;
     } else {
@@ -340,22 +365,6 @@ function calcSchedule(carDays,dayExcl,firstWorker,sundayCount,weekDays){
         }
         var rJ=pickRev(4,li,excl),rS=pickRev(4,rJ.next,excl),rD=pickRev(6,rS.next,excl);
         var jay=rJ.team,sun=rS.team,dae=rD.team;
-        // 결근 복귀: 제이 말번에 삽입, 초과시 앞으로 밀기
-        absRet.forEach(function(ret){
-          insertOrder(jay,ret);
-          if(jay.length>4){
-            var pushed=jay.shift(); // 1번이 밀려남
-            insertOrder(sun,pushed);
-            if(sun.length>4){
-              var pushed2=sun.shift();
-              insertOrder(dae,pushed2);
-              if(dae.length>6){
-                var pushed3=dae.shift();
-                bib.push(pushed3);
-              }
-            }
-          }
-        });
         var assigned=dae.concat(sun,jay,bib);
         var rest=avail.filter(function(w){return assigned.indexOf(w)<0;});
         result.push({hasCar:false,dae:dae,sun:sun,yac:[],jay:jay,jad:[],bib:bib,rest:rest,excl:exclMap});
@@ -395,7 +404,7 @@ var state={
     return [{},{},{},{},{},{},{}];
   })(),
   sundayCount:parseInt(localStorage.getItem('sundayCount')||'4',10),
-  popupDay:null,vacPopup:false,settingsOpen:false,tidePopup:false,tideData:null,myNameOpen:localStorage.getItem('myNameOpen')!=='false',d1Open:localStorage.getItem('d1Open')!=='false',
+  popupDay:null,vacPopup:false,settingsOpen:false,myNameOpen:localStorage.getItem('myNameOpen')!=='false',d1Open:localStorage.getItem('d1Open')!=='false',
   settings:{font:"noto",size:4,skin:"dark"},
   weekDates:getWeekDates(),
   weekDays:getWeekDays(),
@@ -479,11 +488,16 @@ function render(){
   var htitle=h("div",{className:"header-title"});
   var subEl=document.createElement("div");
 subEl.className="header-sub";
-subEl.innerHTML="FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v7.8</span>";
+subEl.innerHTML="FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v6.6</span>";
+var orderBtn=document.createElement("span");
+orderBtn.style.cssText="color:#ff9f7f;font-size:14px;cursor:pointer;margin-left:8px";
+orderBtn.textContent="🍽";
+orderBtn.onclick=function(){window.open('https://1.diskpark.me/order/','_blank');};
 var reloadBtn=document.createElement("span");
-reloadBtn.style.cssText="color:#ffd93d;font-size:14px;cursor:pointer;margin-left:8px";
+reloadBtn.style.cssText="color:#ffd93d;font-size:14px;cursor:pointer;margin-left:6px";
 reloadBtn.textContent="🔄";
 reloadBtn.onclick=function(){location.reload(true);};
+subEl.appendChild(orderBtn);
 subEl.appendChild(reloadBtn);
 htitle.appendChild(subEl);
   htitle.appendChild(h("div",{className:"header-date"},"오늘 · "+fmtToday()));
@@ -572,14 +586,10 @@ htitle.appendChild(subEl);
   bottomRow.appendChild(infoRight);
   hdr.appendChild(bottomRow);
 
-  var vb=h("div",{style:"display:flex;gap:8px;margin-top:10px;justify-content:center"});
-
+  var vb=h("div",{className:"vac-btn-wrap"});
   var vbtn=h("div",{className:"vac-btn"},"📋 연간 휴가 리스트");
   vbtn.onclick=function(){setState({vacPopup:true});};
   vb.appendChild(vbtn);
-  var obtn=h("div",{className:"vac-btn",style:"background:#ff9f7f22;border-color:#ff9f7f44;color:#ff9f7f"},"🍽 억순이네");
-  obtn.onclick=function(){window.open('https://1.diskpark.me/order/','_blank');};
-  vb.appendChild(obtn);
 
   hdr.appendChild(vb);
   app.appendChild(hdr);
@@ -674,7 +684,6 @@ htitle.appendChild(subEl);
   if(state.settingsOpen){
     app.appendChild(renderSettings());
   }
-
 }
 
 var SITES=[
