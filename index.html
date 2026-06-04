@@ -2,31 +2,12 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="지게차 근무표">
-<meta name="theme-color" content="#0d0d1a">
-<link rel="manifest" href="manifest.json">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>지게차 주간 근무표</title>
-
-
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#0d0d1a;color:#e0e0f0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;min-height:100vh}
+body{background:#0d0d1a;color:#e0e0f0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;min-height:100vh}
 ::-webkit-scrollbar{width:4px;height:4px}
-.settings-btn{position:fixed;top:12px;right:12px;z-index:150;width:36px;height:36px;border-radius:50%;background:#1a1a2e;border:1px solid #ffffff22;color:#aaa;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}
-.settings-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:#000000cc;z-index:200;display:flex;align-items:flex-end;justify-content:center}
-.settings-inner{background:#13132a;border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-width:480px;max-height:70vh;overflow-y:auto}
-.settings-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-.settings-title{font-size:16px;font-weight:900;color:#fff}
-.settings-close{color:#555;font-size:20px;cursor:pointer;padding:0 4px}
-.settings-section{margin-bottom:20px}
-.settings-label{font-size:11px;color:#666;font-weight:700;letter-spacing:2px;margin-bottom:10px}
-.settings-options{display:flex;gap:8px;flex-wrap:wrap}
-.settings-opt{border:1.5px solid #333;border-radius:10px;padding:8px 14px;font-size:12px;color:#aaa;cursor:pointer;background:#1a1a2e;user-select:none;transition:all 0.15s}
-.settings-opt.active{border-color:#4a9eff;color:#fff;background:#4a9eff22;font-weight:700}
 ::-webkit-scrollbar-thumb{background:#333;border-radius:4px}
 .header{background:linear-gradient(135deg,#0d0d1a 0%,#1a1a3e 100%);border-bottom:1px solid #ffffff11;padding:20px 16px 16px}
 .header-title{text-align:center;margin-bottom:14px}
@@ -41,25 +22,18 @@ body{background:#0d0d1a;color:#e0e0f0;font-family:-apple-system,BlinkMacSystemFo
 .btn.on-no{background:#ff6b6b;color:#fff;border-color:#ff6b6b}
 .btn.has-excl{background:#ff9f7f22;color:#ff9f7f;border-color:#ff9f7f66;min-height:28px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1px}
 .btn.no-excl{min-height:28px;display:flex;align-items:center;justify-content:center}
-.sunday-ctrl{display:flex;flex-direction:column;gap:2px}
-.sunday-lbl{font-size:9px;color:#888;text-align:center}
-.sunday-row{display:flex;align-items:center;justify-content:center;gap:2px}
-.sun-btn{width:18px;height:18px;border-radius:4px;background:#1a1a2e;border:1px solid #333;color:#aaa;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}
-.sun-cnt{font-size:13px;font-weight:700;min-width:20px;text-align:center}
-.vac-btn-wrap{margin-top:10px;text-align:center}
-.vac-btn{display:inline-block;padding:6px 20px;border-radius:20px;background:#ffd93d22;border:1px solid #ffd93d44;color:#ffd93d;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1px}
-
+.vac-btn-wrap{margin-top:10px;display:flex;gap:8px;justify-content:center}
+.vac-btn{display:inline-block;padding:6px 16px;border-radius:20px;background:#ffd93d22;border:1px solid #ffd93d44;color:#ffd93d;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1px}
 .content{padding:16px 16px 60px;max-width:540px;margin:0 auto}
 .card{background:#13132a;border-radius:14px;padding:14px;margin-bottom:14px}
 .card-title{font-size:11px;font-weight:700;letter-spacing:2px;margin-bottom:10px}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .wbtn{border:1.5px solid #ffffff11;border-radius:10px;padding:9px 4px;text-align:center;font-size:12px;color:#aaa;cursor:pointer;user-select:none;background:#1a1a2e}
 .wbtn.sel{background:#4a9eff22;border-color:#4a9eff;color:#fff;font-weight:700}
 .wbtn.my-sel{background:#ff9f7f22;border-color:#ff9f7f;color:#fff;font-weight:700}
 .hint{text-align:center;color:#444;font-size:13px;padding:16px 0}
 .sw{background:#13132a;border:1px solid #ffffff0a;border-radius:14px;overflow:hidden;margin-bottom:16px}
-.sw-hd{padding:12px 14px 8px;border-bottom:1px solid #ffffff0a;font-size:11px;color:#666;font-weight:700;letter-spacing:2px}
+.sw-hd{padding:12px 14px 8px;border-bottom:1px solid #ffffff0a;font-size:11px;color:#666;font-weight:700;letter-spacing:2px;display:flex;justify-content:space-between;align-items:center}
 .tw{overflow-x:auto;padding:8px 8px 4px}
 table{width:100%;border-collapse:collapse;font-size:11px}
 th{padding:4px 6px;text-align:center;min-width:52px;background:#13132a}
@@ -78,7 +52,6 @@ td.site-td{padding:8px;font-weight:700;font-size:11px;background:#13132a;positio
 .my-item{display:flex;align-items:center;gap:10px;background:#1a1a2e;border-radius:10px;padding:8px 12px}
 .my-day{font-size:12px;font-weight:700;color:#aaa;min-width:28px}
 .my-site{font-size:13px;font-weight:700}
-/* 팝업 */
 .pbg{position:fixed;top:0;left:0;right:0;bottom:0;background:#000000cc;z-index:200;display:flex;align-items:flex-end;justify-content:center}
 .pinner{background:#13132a;border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto}
 .phead{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
@@ -86,7 +59,6 @@ td.site-td{padding:8px;font-weight:700;font-size:11px;background:#13132a;positio
 .pdate{font-size:12px;color:#555;margin-left:8px}
 .pclose{color:#555;font-size:20px;cursor:pointer;padding:0 4px}
 .phint{font-size:11px;color:#666;font-weight:700;letter-spacing:2px;margin-bottom:12px}
-/* 제외 버튼 */
 .eb{border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer;border:1.5px solid #ffffff11;background:#1a1a2e;transition:transform 0.15s}
 .eb:active{transform:scale(0.93)}
 .eb.absent{background:#ff6b6b22;border-color:#ff6b6b}
@@ -102,147 +74,84 @@ td.site-td{padding:8px;font-weight:700;font-size:11px;background:#13132a;positio
 .et.absent{color:#ff6b6b}
 .et.vacation{color:#ffd93d}
 .et.seaworld{color:#88eeff}
-@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
-.popping{animation:pop 0.25s ease}
+.settings-btn{position:fixed;top:12px;right:12px;z-index:150;width:36px;height:36px;border-radius:50%;background:#1a1a2e;border:1px solid #ffffff22;color:#aaa;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}
+.settings-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:#000000cc;z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.settings-inner{background:#13132a;border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-width:480px;max-height:70vh;overflow-y:auto}
+.settings-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.settings-title{font-size:16px;font-weight:900;color:#fff}
+.settings-close{color:#555;font-size:20px;cursor:pointer;padding:0 4px}
+.settings-section{margin-bottom:20px}
+.settings-label{font-size:11px;color:#666;font-weight:700;letter-spacing:2px;margin-bottom:10px}
+.settings-options{display:flex;gap:8px;flex-wrap:wrap}
+.settings-opt{border:1.5px solid #333;border-radius:10px;padding:8px 14px;font-size:12px;color:#aaa;cursor:pointer;background:#1a1a2e;user-select:none;transition:all 0.15s}
+.settings-opt.active{border-color:#4a9eff;color:#fff;background:#4a9eff22;font-weight:700}
+.sun-btn{width:22px;height:22px;border-radius:6px;background:#1a1a2e;border:1px solid #333;color:#aaa;font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}
+.sun-cnt{font-size:13px;font-weight:700;min-width:20px;text-align:center}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
-// Firebase 초기화
-
-// localStorage 버전 체크 - 구버전 데이터 초기화
-var APP_VER = '8.1';
-if(localStorage.getItem('appVer') !== APP_VER){
-  var myName = localStorage.getItem('myName');
-  var myNameOpen = localStorage.getItem('myNameOpen');
-  var d1Open = localStorage.getItem('d1Open');
-  var sundayCount = localStorage.getItem('sundayCount');
-  var dayHistory = localStorage.getItem('dayHistory');
-  localStorage.clear();
-  if(myName) localStorage.setItem('myName', myName);
-  if(myNameOpen) localStorage.setItem('myNameOpen', myNameOpen);
-  if(d1Open) localStorage.setItem('d1Open', d1Open);
-  if(sundayCount) localStorage.setItem('sundayCount', sundayCount);
-  if(dayHistory) localStorage.setItem('dayHistory', dayHistory);
-  localStorage.setItem('appVer', APP_VER);
-}
-var TODAY = new Date().toISOString().slice(0,10); // YYYY-MM-DD
-
-function startFirebaseListener(){}
-
-function loadFromFirebase(callback){
-  db.ref('schedule/'+TODAY).once('value').then(function(snap){
-    var data = snap.val();
-    if(data){
-      if(data.carDays) localStorage.setItem('carPlan', JSON.stringify({date:new Date().toDateString(), days:data.carDays}));
-      if(data.firstWorker) localStorage.setItem('firstWorker', JSON.stringify({date:new Date().toDateString(), name:data.firstWorker}));
-      if(data.dayExcludes) localStorage.setItem('dayExcludes', JSON.stringify({date:new Date().toDateString(), data:data.dayExcludes}));
-    }
-    if(callback) callback();
-  }).catch(function(){ if(callback) callback(); });
-}
-
-function saveToFirebase(patch){}
-
-// PWA Service Worker 등록
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js').catch(function(){});
-}
-// 앱 시작
-render();
 var WORKERS=["이원훈","장형규","조현철","박진호","홍인석","하정남","황정호","김현진","전창범","오규종","김경훈","정철수","황인태","안찬범","김상원","이동현","김태민","김성환","김세영","홍원진","이재일","이준영","김태호","김택성","채관기","김재원","장병숙","윤광덕","박성기"];
 var N=WORKERS.length;
 var KR=["일","월","화","수","목","금","토"];
 var VACATION_SCHEDULE=[
-  {name:"김상원",  start:"2026-04-13",end:"2026-04-16"},
-  {name:"황정호",  start:"2026-04-20",end:"2026-04-23"},
-  {name:"하정남",  start:"2026-04-27",end:"2026-04-30"},
-  {name:"이동현",  start:"2026-05-04",end:"2026-05-07"},
-  {name:"장형규",  start:"2026-05-18",end:"2026-05-21"},
-  {name:"조현철",  start:"2026-05-26",end:"2026-05-29"},
-  {name:"홍인석",  start:"2026-06-01",end:"2026-06-04"},
-  {name:"홍원진",  start:"2026-06-15",end:"2026-06-18"},
-  {name:"김재원",  start:"2026-06-22",end:"2026-06-25"},
-  {name:"황인태",  start:"2026-06-29",end:"2026-07-02"},
-  {name:"김성환",  start:"2026-07-06",end:"2026-07-09"},
-  {name:"오규종",  start:"2026-07-13",end:"2026-07-16"},
-  {name:"이재일",  start:"2026-07-20",end:"2026-07-23"},
-  {name:"김택성",  start:"2026-07-27",end:"2026-07-30"},
-  {name:"김세영",  start:"2026-08-03",end:"2026-08-06"},
-  {name:"정철수",  start:"2026-08-10",end:"2026-08-13"},
-  {name:"전창범",  start:"2026-08-18",end:"2026-08-21"},
-  {name:"김태민",  start:"2026-08-25",end:"2026-08-28"},
-  {name:"이준영",  start:"2026-08-31",end:"2026-09-03"},
-  {name:"채관기",  start:"2026-09-08",end:"2026-09-11"},
-  {name:"장병숙",  start:"2026-09-30",end:"2026-10-03"},
-  {name:"김경훈",  start:"2026-10-05",end:"2026-10-08"},
-  {name:"윤광덕",  start:"2026-10-28",end:"2026-10-31"},
-  {name:"안찬범",  start:"2026-11-23",end:"2026-11-26"},
-  {name:"이원훈",  start:"2026-12-07",end:"2026-12-10"},
-  {name:"김현진",  start:"2026-12-21",end:"2026-12-24"},
-  {name:"박진호",  start:"2026-12-28",end:"2026-12-31"},
-  {name:"박성기",  start:"2027-01-25",end:"2027-01-28"}
+  {name:"김상원",start:"2026-04-13",end:"2026-04-16"},
+  {name:"황정호",start:"2026-04-20",end:"2026-04-23"},
+  {name:"하정남",start:"2026-04-27",end:"2026-04-30"},
+  {name:"이동현",start:"2026-05-04",end:"2026-05-07"},
+  {name:"장형규",start:"2026-05-18",end:"2026-05-21"},
+  {name:"조현철",start:"2026-05-26",end:"2026-05-29"},
+  {name:"홍인석",start:"2026-06-01",end:"2026-06-04"},
+  {name:"홍원진",start:"2026-06-15",end:"2026-06-18"},
+  {name:"김재원",start:"2026-06-22",end:"2026-06-25"},
+  {name:"황인태",start:"2026-06-29",end:"2026-07-02"},
+  {name:"김성환",start:"2026-07-06",end:"2026-07-09"},
+  {name:"오규종",start:"2026-07-13",end:"2026-07-16"},
+  {name:"이재일",start:"2026-07-20",end:"2026-07-23"},
+  {name:"김택성",start:"2026-07-27",end:"2026-07-30"},
+  {name:"김세영",start:"2026-08-03",end:"2026-08-06"},
+  {name:"정철수",start:"2026-08-10",end:"2026-08-13"},
+  {name:"전창범",start:"2026-08-18",end:"2026-08-21"},
+  {name:"김태민",start:"2026-08-25",end:"2026-08-28"},
+  {name:"이준영",start:"2026-08-31",end:"2026-09-03"},
+  {name:"채관기",start:"2026-09-08",end:"2026-09-11"},
+  {name:"장병숙",start:"2026-09-30",end:"2026-10-03"},
+  {name:"김경훈",start:"2026-10-05",end:"2026-10-08"},
+  {name:"윤광덕",start:"2026-10-28",end:"2026-10-31"},
+  {name:"안찬범",start:"2026-11-23",end:"2026-11-26"},
+  {name:"이원훈",start:"2026-12-07",end:"2026-12-10"},
+  {name:"김현진",start:"2026-12-21",end:"2026-12-24"},
+  {name:"박진호",start:"2026-12-28",end:"2026-12-31"},
+  {name:"박성기",start:"2027-01-25",end:"2027-01-28"}
 ];
-
-// 씨월드 인원 휴가 (땜빵 필요)
 var SEAWORLD_SCHEDULE=[
-  {name:"정태경", start:"2026-04-06",end:"2026-04-09"},
-  {name:"박혁신", start:"2026-05-11",end:"2026-05-14"},
-  {name:"김재일", start:"2026-06-16",end:"2026-06-19"},
-  {name:"문환석", start:"2026-10-14",end:"2026-10-17"}
+  {name:"정태경",start:"2026-04-06",end:"2026-04-09"},
+  {name:"박혁신",start:"2026-05-11",end:"2026-05-14"},
+  {name:"김재일",start:"2026-06-16",end:"2026-06-19"},
+  {name:"문환석",start:"2026-10-14",end:"2026-10-17"}
 ];
-// 씨월드 고정 인원 (땜빵 제외 대상)
-var SEAWORLD_MEMBERS=["정태경","박혁신","김재일","문환석"];
 
-function getWeekDates(){
-  var t=new Date(),r=[];
-  for(var i=0;i<7;i++){var d=new Date(t);d.setDate(t.getDate()+i);r.push(pad(d.getMonth()+1)+"."+pad(d.getDate()));}
-  return r;
-}
-function getWeekDays(){
-  var t=new Date(),r=[];
-  for(var i=0;i<7;i++){var d=new Date(t);d.setDate(t.getDate()+i);r.push(KR[d.getDay()]);}
-  return r;
-}
-function getWeekDateObjs(){
-  var t=new Date(),r=[];
-  for(var i=0;i<7;i++){var d=new Date(t);d.setDate(t.getDate()+i);d.setHours(0,0,0,0);r.push(d);}
-  return r;
-}
+function getWeekDates(){var t=new Date(),r=[];for(var i=0;i<7;i++){var d=new Date(t);d.setDate(t.getDate()+i);r.push(pad(d.getMonth()+1)+"."+pad(d.getDate()));}return r;}
+function getWeekDays(){var t=new Date(),r=[];for(var i=0;i<7;i++){var d=new Date(t);d.setDate(t.getDate()+i);r.push(KR[d.getDay()]);}return r;}
+function getWeekDateObjs(){var t=new Date(),r=[];for(var i=0;i<7;i++){var d=new Date(t);d.setDate(t.getDate()+i);d.setHours(0,0,0,0);r.push(d);}return r;}
 function pad(n){return n<10?"0"+n:""+n;}
 function fmtToday(){var t=new Date();return t.getFullYear()+"."+pad(t.getMonth()+1)+"."+pad(t.getDate());}
 function fmtVacDate(s){var d=new Date(s+"T00:00:00");return(d.getMonth()+1)+"/"+d.getDate()+"("+KR[d.getDay()]+")";}
 function toNum(name){return WORKERS.indexOf(name)+1;}
 
 function getAutoVac(dateObjs){
-  var r=[];
-  for(var i=0;i<7;i++){r.push({});}
+  var r=[];for(var i=0;i<7;i++){r.push({});}
   dateObjs.forEach(function(cur,idx){
-    VACATION_SCHEDULE.forEach(function(v){
-      var s=new Date(v.start+"T00:00:00");
-      var e=new Date(v.end+"T00:00:00");
-      if(cur>=s&&cur<=e) r[idx][v.name]="휴가";
-    });
+    VACATION_SCHEDULE.forEach(function(v){var s=new Date(v.start+"T00:00:00"),e=new Date(v.end+"T00:00:00");if(cur>=s&&cur<=e)r[idx][v.name]="휴가";});
+    SEAWORLD_SCHEDULE.forEach(function(v){var s=new Date(v.start+"T00:00:00"),e=new Date(v.end+"T00:00:00");if(cur>=s&&cur<=e)r[idx][v.name]="씨월드";});
   });
   return r;
 }
 
-function pickFwd(count,startIdx,excl){
-  var team=[],cur=((startIdx%N)+N)%N;
-  while(team.length<count){var name=WORKERS[cur];cur=(cur+1)%N;if(excl.indexOf(name)<0)team.push(name);}
-  return {team:team,next:cur};
-}
-function pickRev(count,fromIdx,excl){
-  var team=[],cur=((fromIdx%N)+N)%N;
-  while(team.length<count){var name=WORKERS[cur];if(excl.indexOf(name)<0)team.push(name);cur=((cur-1)+N)%N;}
-  return {team:team.reverse(),next:cur};
-}
-function insertOrder(arr,name){
-  var idx=WORKERS.indexOf(name),ip=arr.length;
-  for(var i=0;i<arr.length;i++){if(WORKERS.indexOf(arr[i])>idx){ip=i;break;}}
-  arr.splice(ip,0,name);
-}
+function pickFwd(count,startIdx,excl){var team=[],cur=((startIdx%N)+N)%N;while(team.length<count){var name=WORKERS[cur];cur=(cur+1)%N;if(excl.indexOf(name)<0)team.push(name);}return{team:team,next:cur};}
+function pickRev(count,fromIdx,excl){var team=[],cur=((fromIdx%N)+N)%N;while(team.length<count){var name=WORKERS[cur];if(excl.indexOf(name)<0)team.push(name);cur=((cur-1)+N)%N;}return{team:team.reverse(),next:cur};}
+function insertOrder(arr,name){var idx=WORKERS.indexOf(name),ip=arr.length;for(var i=0;i<arr.length;i++){if(WORKERS.indexOf(arr[i])>idx){ip=i;break;}}arr.splice(ip,0,name);}
 
 function calcSchedule(carDays,dayExcl,firstWorker,sundayCount,weekDays){
   var fi=WORKERS.indexOf(firstWorker);
@@ -272,17 +181,13 @@ function calcSchedule(carDays,dayExcl,firstWorker,sundayCount,weekDays){
         var r1=pickFwd(6-pj.length,cursor,excl);yac=pj.concat(r1.team);cursor=r1.next;
         var r2=pickFwd(4,cursor,excl);jay=r2.team;cursor=r2.next;
       }
-      // 결근 복귀: 자동차로, 비번 다음순번으로 채우기
       var jadExtra=[];
       absRet.forEach(function(ret){
-        if(dae.indexOf(ret)>=0) dae=dae.filter(function(w){return w!==ret;});
+        if(dae.indexOf(ret)>=0)dae=dae.filter(function(w){return w!==ret;});
         jadExtra.push(ret);
-        // 비번에서 빠진 자리 다음 순번으로 채우기
         var lastBibIdx=WORKERS.indexOf(bib[bib.length-1]);
         var nextIdx=(lastBibIdx+1)%N;
-        while(excl.indexOf(WORKERS[nextIdx])>=0||bib.indexOf(WORKERS[nextIdx])>=0||jadExtra.indexOf(WORKERS[nextIdx])>=0){
-          nextIdx=(nextIdx+1)%N;
-        }
+        while(excl.indexOf(WORKERS[nextIdx])>=0||bib.indexOf(WORKERS[nextIdx])>=0||jadExtra.indexOf(WORKERS[nextIdx])>=0){nextIdx=(nextIdx+1)%N;}
         bib.push(WORKERS[nextIdx]);
       });
       vacRet.forEach(function(ret){
@@ -291,76 +196,33 @@ function calcSchedule(carDays,dayExcl,firstWorker,sundayCount,weekDays){
       });
       var assigned=dae.concat(sun,yac,jay,bib);
       var jad=avail.filter(function(w){return assigned.indexOf(w)<0;});
-      // 결근 복귀자를 자동차에 추가
       jadExtra.forEach(function(ret){if(jad.indexOf(ret)<0)jad.push(ret);});
       result.push({hasCar:true,dae:dae,sun:sun,yac:yac,jay:jay,jad:jad,bib:bib,rest:[],excl:exclMap});
       prevDae=dae;prevSun=sun;prevYac=yac;prevActBib=bib;
     } else {
       if(sundayCount>0&&weekDays&&weekDays[d]==="일"){
-        // 일요근무도 차없음 연속 규칙: 전날 대양1번 앞번호 기준
         var li;
-        if(prevCar===false){
-          li=(WORKERS.indexOf(prevDae[0])-1+N)%N;
-        } else {
-          li=WORKERS.indexOf(prevActBib[prevActBib.length-1]);
-        }
+        if(prevCar===false){li=(WORKERS.indexOf(prevDae[0])-1+N)%N;}
+        else{li=WORKERS.indexOf(prevActBib[prevActBib.length-1]);}
         var sw=pickRev(sundayCount,li,excl).team;
         var rest=avail.filter(function(w){return sw.indexOf(w)<0&&bib.indexOf(w)<0;});
-        result.push({hasCar:false,dae:[],sun:[],yac:[],jay:[],jad:sw,bib:bib,rest:rest,excl:exclMap,isSun:true,swTeam:sw});
-        // 차 있음 다음날 비번: 근무자 + 부족하면 다음순번으로 6명 채우기
+        result.push({hasCar:false,dae:[],sun:[],yac:[],jay:[],jad:[],sunw:sw,bib:bib,rest:rest,excl:exclMap,isSun:true});
         var bibForNext=sw.slice();
-        if(bibForNext.length>6){
-          // 말번 탈락 → 대양1번
-          cursor=WORKERS.indexOf(bibForNext[bibForNext.length-1]);
-          bibForNext=bibForNext.slice(0,6);
-        } else if(bibForNext.length<6){
-          // 부족분 다음순번으로 채우기
-          var lastIdx=WORKERS.indexOf(bibForNext[bibForNext.length-1]);
-          var need=6-bibForNext.length;
-          var cur=(lastIdx+1)%N;
-          for(var ni=0;ni<need;ni++){
-            while(excl.indexOf(WORKERS[cur])>=0) cur=(cur+1)%N;
-            bibForNext.push(WORKERS[cur]);
-            cur=(cur+1)%N;
-          }
-          cursor=cur;
-        } else {
-          cursor=WORKERS.indexOf(bibForNext[bibForNext.length-1])+1;
-        }
+        if(bibForNext.length>6){cursor=WORKERS.indexOf(bibForNext[bibForNext.length-1]);bibForNext=bibForNext.slice(0,6);}
+        else if(bibForNext.length<6){var lastIdx=WORKERS.indexOf(bibForNext[bibForNext.length-1]),need=6-bibForNext.length,cur2=(lastIdx+1)%N;for(var ni=0;ni<need;ni++){while(excl.indexOf(WORKERS[cur2])>=0)cur2=(cur2+1)%N;bibForNext.push(WORKERS[cur2]);cur2=(cur2+1)%N;}cursor=cur2;}
+        else{cursor=(WORKERS.indexOf(bibForNext[bibForNext.length-1])+1)%N;}
         prevDae=bibForNext;
-        // 차 없음 다음날: 일요일에 쉰 사람들 말번부터 역순
         var restAll=WORKERS.filter(function(w){return sw.indexOf(w)<0&&excl.indexOf(w)<0;});
-        prevActBib=restAll;
-        prevSun=[];prevYac=[];
+        prevActBib=restAll;prevSun=[];prevYac=[];
       } else {
-        // 차없음: 당일 대양1번 앞번호가 비번 말번
-        // 전날이 차있음이면 prevActBib 말번 사용
-        // 전날도 차없음이면 전날 대양1번 앞번호 사용
         var li;
-        if(prevCar===false){
-          // 연속 차없음: 전날 대양 첫번째 앞번호
-          li=(WORKERS.indexOf(prevDae[0])-1+N)%N;
-        } else {
-          // 차있음 다음 차없음: 전날 비번 말번
-          li=WORKERS.indexOf(prevActBib[prevActBib.length-1]);
-        }
+        if(prevCar===false){li=(WORKERS.indexOf(prevDae[0])-1+N)%N;}
+        else{li=WORKERS.indexOf(prevActBib[prevActBib.length-1]);}
         var rJ=pickRev(4,li,excl),rS=pickRev(4,rJ.next,excl),rD=pickRev(6,rS.next,excl);
         var jay=rJ.team,sun=rS.team,dae=rD.team;
-        // 결근 복귀: 제이 말번에 삽입, 초과시 앞으로 밀기
         absRet.forEach(function(ret){
           insertOrder(jay,ret);
-          if(jay.length>4){
-            var pushed=jay.shift(); // 1번이 밀려남
-            insertOrder(sun,pushed);
-            if(sun.length>4){
-              var pushed2=sun.shift();
-              insertOrder(dae,pushed2);
-              if(dae.length>6){
-                var pushed3=dae.shift();
-                bib.push(pushed3);
-              }
-            }
-          }
+          if(jay.length>4){var pushed=jay.shift();insertOrder(sun,pushed);if(sun.length>4){var pushed2=sun.shift();insertOrder(dae,pushed2);if(dae.length>6){var pushed3=dae.shift();bib.push(pushed3);}}}
         });
         var assigned=dae.concat(sun,jay,bib);
         var rest=avail.filter(function(w){return assigned.indexOf(w)<0;});
@@ -373,125 +235,69 @@ function calcSchedule(carDays,dayExcl,firstWorker,sundayCount,weekDays){
   return result;
 }
 
-// State
 var state={
   carDays:(function(){
-    try{
-      var saved=JSON.parse(localStorage.getItem('carPlan')||'null');
-      if(saved&&saved.date===new Date().toDateString())return saved.days;
-    }catch(e){}
-    var days=[null,null,null,null,null,null,null];
-    var wk=getWeekDays();
-    for(var i=0;i<wk.length;i++){if(wk[i]==="일")days[i]=false;}
-    return days;
+    try{var s=JSON.parse(localStorage.getItem('carPlan')||'null');if(s&&s.date===new Date().toDateString()&&Array.isArray(s.days))return s.days;}catch(e){}
+    var days=[null,null,null,null,null,null,null];var wk=getWeekDays();for(var i=0;i<wk.length;i++){if(wk[i]==="일")days[i]=false;}return days;
   })(),
-  firstWorker:(function(){
-    try{
-      var saved=JSON.parse(localStorage.getItem('firstWorker')||'null');
-      if(saved&&saved.date===new Date().toDateString())return saved.name||'';
-    }catch(e){}
-    return '';
-  })(),myName:localStorage.getItem('myName')||'',
-  history:(function(){try{return JSON.parse(localStorage.getItem('dayHistory')||'[]');}catch(e){return[];}}()),
-  dayExcludes:(function(){
-    try{
-      var saved=JSON.parse(localStorage.getItem('dayExcludes')||'null');
-      if(saved&&saved.date===new Date().toDateString()&&Array.isArray(saved.data))return saved.data;
-    }catch(e){}
-    return [{},{},{},{},{},{},{}];
-  })(),
+  firstWorker:(function(){try{var s=JSON.parse(localStorage.getItem('firstWorker')||'null');if(s&&s.date===new Date().toDateString())return s.name||'';}catch(e){}return '';})(),
+  myName:localStorage.getItem('myName')||'',
+  dayExcludes:(function(){try{var s=JSON.parse(localStorage.getItem('dayExcludes')||'null');if(s&&s.date===new Date().toDateString()&&Array.isArray(s.data))return s.data;}catch(e){}return [{},{},{},{},{},{},{}];})(),
   sundayCount:parseInt(localStorage.getItem('sundayCount')||'4',10),
-  popupDay:null,vacPopup:false,settingsOpen:false,tidePopup:false,tideData:null,myNameOpen:localStorage.getItem('myNameOpen')!=='false',d1Open:localStorage.getItem('d1Open')!=='false',
-  settings:{font:"noto",size:4,skin:"dark"},
-  weekDates:getWeekDates(),
-  weekDays:getWeekDays(),
-  weekDateObjs:getWeekDateObjs()
+  history:(function(){try{return JSON.parse(localStorage.getItem('dayHistory')||'[]');}catch(e){return[];}})(),
+  settings:{font:"system",size:4,skin:"dark"},
+  popupDay:null,vacPopup:false,settingsOpen:false,
+  myNameOpen:localStorage.getItem('myNameOpen')!=='false',
+  d1Open:localStorage.getItem('d1Open')!=='false',
+  weekDates:getWeekDates(),weekDays:getWeekDays(),weekDateObjs:getWeekDateObjs()
 };
 
-function setState(patch){
-  for(var k in patch)state[k]=patch[k];
-  render();
-}
+function setState(patch){for(var k in patch)state[k]=patch[k];render();}
 
 function h(tag,attrs,children){
   var el=document.createElement(tag);
-  if(attrs)for(var k in attrs){
-    if(k==="className")el.className=attrs[k];
-    else if(k.startsWith("on"))el[k.toLowerCase()]=attrs[k];
-    else el.setAttribute(k,attrs[k]);
-  }
-  if(children){
-    if(typeof children==="string")el.innerHTML=children;
-    else if(Array.isArray(children))children.forEach(function(c){if(c)el.appendChild(typeof c==="string"?document.createTextNode(c):c);});
-    else el.appendChild(children);
-  }
+  if(attrs)for(var k in attrs){if(k==="className")el.className=attrs[k];else if(k.startsWith("on"))el[k.toLowerCase()]=attrs[k];else el.setAttribute(k,attrs[k]);}
+  if(children){if(typeof children==="string")el.innerHTML=children;else if(Array.isArray(children))children.forEach(function(c){if(c)el.appendChild(typeof c==="string"?document.createTextNode(c):c);});else el.appendChild(children);}
   return el;
 }
 
 function applySettings(s){
-  var fonts={"noto":"-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif","system":"-apple-system,sans-serif","nanum":"'Nanum Gothic',sans-serif"};
-  var sizeMap=[10,11,12,13,14,15,16];
-  var skins={
-    "dark":{bg:"#0d0d1a",card:"#13132a",hdr1:"#0d0d1a",hdr2:"#1a1a3e"},
-    "navy":{bg:"#080f1e",card:"#0d1929",hdr1:"#080f1e",hdr2:"#0d1e3a"},
-    "black":{bg:"#000000",card:"#0d0d0d",hdr1:"#000000",hdr2:"#111111"}
-  };
-  var font=fonts[s.font]||fonts["noto"];
-  var size=(sizeMap[s.size]||13)+"px";
-  var sk=skins[s.skin]||skins["dark"];
-
-  document.body.style.setProperty("font-family",font,"important");
-  document.body.style.setProperty("font-size",size,"important");
-  document.body.style.setProperty("background",sk.bg,"important");
-
+  var sizes=[10,11,12,13,14,15,16];
+  var size=(sizes[s.size]||13)+"px";
   var styleEl=document.getElementById("dyn-style");
   if(!styleEl){styleEl=document.createElement("style");styleEl.id="dyn-style";document.head.appendChild(styleEl);}
-  styleEl.textContent=
-    "body{font-family:"+font+"!important;font-size:"+size+"!important;background:"+sk.bg+"!important}"+
-    ".header{background:linear-gradient(135deg,"+sk.hdr1+" 0%,"+sk.hdr2+" 100%)!important}"+
-    ".card{background:"+sk.card+"!important;border:1px solid #4a9eff22}"+
-    ".my-card{background:"+sk.card+"!important;border:1px solid #ff9f7f33}"+
-    ".sw{background:"+sk.card+"!important}"+
-    ".pinner,.settings-inner{background:"+sk.card+"!important}"+
-    "table th,td.site-td,th.site-th{background:"+sk.card+"!important}"+
-    ".wbtn,.eb{background:"+sk.card+"!important}"+
-    ".btn{background:"+sk.card+"!important}"+
-    ".my-item{background:"+sk.card+"!important}"+
-    ".ref-wrap,.sw-hd{background:"+sk.card+"!important}";
+  styleEl.textContent="body{font-size:"+size+"!important}";
 }
 
 function render(){
   applySettings(state.settings);
   var wd=state.weekDates,wk=state.weekDays,cd=state.carDays;
-  var dayExcl=state.dayExcludes,sc=state.sundayCount;
+  var dayExcl=state.dayExcludes;
+  if(!Array.isArray(dayExcl)||dayExcl.length!==7){dayExcl=[{},{},{},{},{},{},{}];state.dayExcludes=dayExcl;}
+  var sc=state.sundayCount;
   var autoVac=getAutoVac(state.weekDateObjs);
-  var merged=dayExcl.map(function(m,i){
-    var r=Object.assign({},autoVac[i]);
-    Object.keys(m).forEach(function(k){r[k]=m[k];});
-    return r;
-  });
+  var merged=dayExcl.map(function(m,i){var r=Object.assign({},autoVac[i]);if(m&&typeof m==='object')Object.keys(m).forEach(function(k){r[k]=m[k];});return r;});
   var allSel=cd.every(function(c){return c!==null;});
   var sched=(state.firstWorker&&allSel)?calcSchedule(cd,merged,state.firstWorker,sc,wk):null;
 
   var app=document.getElementById("app");
   app.innerHTML="";
-  // 설정 버튼
+
   var settBtn=h("div",{className:"settings-btn"},"⚙️");
   settBtn.onclick=function(){setState({settingsOpen:true});};
   app.appendChild(settBtn);
 
-  // HEADER
   var hdr=h("div",{className:"header"});
   var htitle=h("div",{className:"header-title"});
   var subEl=document.createElement("div");
-subEl.className="header-sub";
-subEl.innerHTML="FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v8.2</span>";
-var reloadBtn=document.createElement("span");
-reloadBtn.style.cssText="color:#ffd93d;font-size:14px;cursor:pointer;margin-left:8px";
-reloadBtn.textContent="🔄";
-reloadBtn.onclick=function(){location.reload(true);};
-subEl.appendChild(reloadBtn);
-htitle.appendChild(subEl);
+  subEl.className="header-sub";
+  subEl.innerHTML="FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v6.2</span>";
+  var reloadBtn=document.createElement("span");
+  reloadBtn.style.cssText="color:#ffd93d;font-size:14px;cursor:pointer;margin-left:8px";
+  reloadBtn.textContent="🔄";
+  reloadBtn.onclick=function(){location.reload();};
+  subEl.appendChild(reloadBtn);
+  htitle.appendChild(subEl);
   htitle.appendChild(h("div",{className:"header-date"},"오늘 · "+fmtToday()));
   hdr.appendChild(htitle);
 
@@ -499,109 +305,112 @@ htitle.appendChild(subEl);
   wk.forEach(function(day,idx){
     var isWe=day==="토"||day==="일";
     var val=cd[idx];
-    var exCount=Object.keys(merged[idx]).length;
+    var exclMap=merged[idx]||{};
+    var vacCnt=Object.keys(exclMap).filter(function(k){return exclMap[k]==="휴가";}).length;
+    var absCnt=Object.keys(exclMap).filter(function(k){return exclMap[k]==="결근";}).length;
+    var swCnt=Object.keys(exclMap).filter(function(k){return exclMap[k]==="씨월드";}).length;
+    var exCount=vacCnt+absCnt+swCnt;
     var col=h("div",{className:"day-col"});
     col.appendChild(h("div",{className:"day-label",style:"color:"+(isWe?"#ff6b6b":"#aaa")},day));
     col.appendChild(h("div",{className:"day-date"},wd[idx]));
     var btnY=h("div",{className:"btn"+(val===true?" on-yes":"")},"있음");
-    btnY.onclick=function(){toggleCar(idx,true);};
+    (function(i){btnY.onclick=function(){toggleCar(i,true);};})(idx);
     col.appendChild(btnY);
     var btnN=h("div",{className:"btn"+(val===false?" on-no":"")},"없음");
-    btnN.onclick=function(){toggleCar(idx,false);};
+    (function(i){btnN.onclick=function(){toggleCar(i,false);};})(idx);
     col.appendChild(btnN);
     var btnE=h("div",{className:"btn"+(exCount>0?" has-excl":" no-excl")});
     if(exCount>0){
-      var excMap=merged[idx];
-      var vacCnt=Object.keys(excMap).filter(function(k){return excMap[k]==="휴가";}).length;
-      var absCnt=Object.keys(excMap).filter(function(k){return excMap[k]==="결근";}).length;
-      var swCnt=Object.keys(excMap).filter(function(k){return excMap[k]==="씨월드";}).length;
       var parts=[];
       if(vacCnt>0)parts.push("휴"+vacCnt);
       if(absCnt>0)parts.push("결"+absCnt);
       if(swCnt>0)parts.push("씨"+swCnt);
-      btnE.innerHTML=parts.join(" ");
-    } else {
-      btnE.innerHTML="제외";
-    }
-    btnE.onclick=function(){setState({popupDay:idx});};
+      btnE.textContent=parts.join(" ");
+    } else {btnE.textContent="제외";}
+    (function(i){btnE.onclick=function(){setState({popupDay:i});};})(idx);
     col.appendChild(btnE);
-
+    if(day==="일"){
+      var sc2=document.createElement("div");
+      sc2.style.cssText="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:2px";
+      var slbl=h("div",{style:"font-size:9px;color:#888"},"인원");
+      var sr=document.createElement("div");
+      sr.style.cssText="display:flex;align-items:center;gap:3px";
+      var bm=h("div",{className:"sun-btn"},"-");
+      (function(){bm.onclick=function(){var v=Math.max(0,state.sundayCount-1);localStorage.setItem('sundayCount',v);setState({sundayCount:v});};})();
+      var cnt=h("div",{className:"sun-cnt",style:"color:"+(sc>0?"#ffd93d":"#555")},String(sc));
+      var bp=h("div",{className:"sun-btn"},"+");
+      (function(){bp.onclick=function(){var v=Math.min(29,state.sundayCount+1);localStorage.setItem('sundayCount',v);setState({sundayCount:v});};})();
+      sr.appendChild(bm);sr.appendChild(cnt);sr.appendChild(bp);
+      sc2.appendChild(slbl);sc2.appendChild(sr);
+      col.appendChild(sc2);
+    }
     dayRow.appendChild(col);
   });
   hdr.appendChild(dayRow);
 
-
-
-  // 인원 +/- 왼쪽에 오늘 휴가/결근자 표시
-  var todayExcl2=merged[0]||{};
-  var todayVac2=Object.keys(todayExcl2).filter(function(k){return todayExcl2[k]==="휴가";});
-  var todayAbs2=Object.keys(todayExcl2).filter(function(k){return todayExcl2[k]==="결근";});
-  var todaySw2=Object.keys(todayExcl2).filter(function(k){return todayExcl2[k]==="씨월드";});
-  var bottomRow=h("div",{style:"display:flex;align-items:center;justify-content:space-between;margin-top:10px;min-height:36px"});
-  // 왼쪽: 오늘 휴가/결근자
-  var infoLeft=h("div",{style:"flex:1;padding-right:8px"});
-  // 전체 7일 제외자 수집해서 상태창에 표시
+  // 상태창
   var allVacList=[],allAbsList=[],allSwList=[];
   merged.forEach(function(exclMap,i){
     var dayLabel=wk[i];
     Object.keys(exclMap).forEach(function(name){
       var t=exclMap[name];
-      if(t==="휴가") allVacList.push(name+"("+dayLabel+")");
-      else if(t==="결근") allAbsList.push(name+"("+dayLabel+")");
-      else if(t==="씨월드") allSwList.push(name+"("+dayLabel+")");
+      if(t==="휴가")allVacList.push(name+"("+dayLabel+")");
+      else if(t==="결근")allAbsList.push(name+"("+dayLabel+")");
+      else if(t==="씨월드")allSwList.push(name+"("+dayLabel+")");
     });
   });
-  // 중복 제거
   function dedup(arr){var seen={},out=[];arr.forEach(function(v){var n=v.split("(")[0];if(!seen[n]){seen[n]=v;out.push(v);}});return out;}
   allVacList=dedup(allVacList);allAbsList=dedup(allAbsList);allSwList=dedup(allSwList);
-  var infoLine=document.createElement("div");
-  infoLine.style.cssText="font-size:13px;font-weight:700;line-height:1.8;display:flex;flex-wrap:wrap;gap:8px";
-  if(allVacList.length>0){var sp=document.createElement("span");sp.style.color="#ffd93d";sp.textContent="휴가·"+allVacList.join(" ");infoLine.appendChild(sp);}
-  if(allAbsList.length>0){var sp=document.createElement("span");sp.style.color="#ff6b6b";sp.textContent="결근·"+allAbsList.join(" ");infoLine.appendChild(sp);}
-  if(allSwList.length>0){var sp=document.createElement("span");sp.style.color="#88eeff";sp.textContent="씨월드·"+allSwList.join(" ");infoLine.appendChild(sp);}
-  if(infoLine.children.length>0)infoLeft.appendChild(infoLine);
-  // 오른쪽: 일요일 있을때만 인원 +/-
+
+  var bottomRow=h("div",{style:"display:flex;align-items:center;justify-content:space-between;margin-top:10px;min-height:36px"});
+  var infoLeft=h("div",{style:"flex:1;padding-right:8px"});
+  if(allVacList.length>0||allAbsList.length>0||allSwList.length>0){
+    var infoLine=document.createElement("div");
+    infoLine.style.cssText="font-size:13px;font-weight:700;line-height:1.8;display:flex;flex-wrap:wrap;gap:8px";
+    if(allVacList.length>0){var sp=document.createElement("span");sp.style.color="#ffd93d";sp.textContent="휴가·"+allVacList.join(" ");infoLine.appendChild(sp);}
+    if(allAbsList.length>0){var sp=document.createElement("span");sp.style.color="#ff6b6b";sp.textContent="결근·"+allAbsList.join(" ");infoLine.appendChild(sp);}
+    if(allSwList.length>0){var sp=document.createElement("span");sp.style.color="#88eeff";sp.textContent="씨월드·"+allSwList.join(" ");infoLine.appendChild(sp);}
+    infoLeft.appendChild(infoLine);
+  }
   var infoRight=h("div",{style:"display:flex;flex-direction:column;align-items:flex-end;gap:2px"});
-  var wk2=state.weekDays;
-  if(wk2.indexOf("일")>=0){
-    var lbl=h("div",{className:"sunday-lbl",style:"text-align:right"},"인원");
-    var sr2=h("div",{className:"sunday-row"});
+  if(wk.indexOf("일")>=0){
+    var lbl2=h("div",{style:"font-size:9px;color:#888"},"인원");
+    var sr2=document.createElement("div");
+    sr2.style.cssText="display:flex;align-items:center;gap:3px";
     var bm2=h("div",{className:"sun-btn"},"-");
     bm2.onclick=function(){var v=Math.max(0,state.sundayCount-1);localStorage.setItem('sundayCount',v);setState({sundayCount:v});};
     var cnt2=h("div",{className:"sun-cnt",style:"color:"+(sc>0?"#ffd93d":"#555")},String(sc));
     var bp2=h("div",{className:"sun-btn"},"+");
     bp2.onclick=function(){var v=Math.min(29,state.sundayCount+1);localStorage.setItem('sundayCount',v);setState({sundayCount:v});};
     sr2.appendChild(bm2);sr2.appendChild(cnt2);sr2.appendChild(bp2);
-    infoRight.appendChild(lbl);infoRight.appendChild(sr2);
+    infoRight.appendChild(lbl2);infoRight.appendChild(sr2);
   }
-  bottomRow.appendChild(infoLeft);
-  bottomRow.appendChild(infoRight);
+  bottomRow.appendChild(infoLeft);bottomRow.appendChild(infoRight);
   hdr.appendChild(bottomRow);
 
-  var vb=h("div",{style:"display:flex;gap:8px;margin-top:10px;justify-content:center"});
-
+  var vb=h("div",{className:"vac-btn-wrap"});
+  var tbtn=h("div",{className:"vac-btn",style:"background:#4a9eff22;border-color:#4a9eff44;color:#4a9eff"},"🌊 물때");
+  tbtn.onclick=function(){window.open('https://www.badatime.com/105.html','_blank');};
+  vb.appendChild(tbtn);
   var vbtn=h("div",{className:"vac-btn"},"📋 연간 휴가 리스트");
   vbtn.onclick=function(){setState({vacPopup:true});};
   vb.appendChild(vbtn);
   var obtn=h("div",{className:"vac-btn",style:"background:#ff9f7f22;border-color:#ff9f7f44;color:#ff9f7f"},"🍽 억순이네");
   obtn.onclick=function(){window.open('https://1.diskpark.me/order/','_blank');};
   vb.appendChild(obtn);
-
   hdr.appendChild(vb);
   app.appendChild(hdr);
 
-  // CONTENT
   var cont=h("div",{className:"content"});
 
-  // 내 이름 선택
+  // 내 이름
   var myCard=h("div",{className:"card",style:"border:1px solid #ff9f7f22"});
   var myHead=h("div",{style:"display:flex;justify-content:space-between;align-items:center;cursor:pointer"});
   var myTitleEl=document.createElement("div");
   myTitleEl.style.cssText="font-size:11px;font-weight:700;letter-spacing:2px;color:#ff9f7f";
   myTitleEl.textContent="▪ 내 이름 선택"+(state.myName?" · "+state.myName:"");
   var myToggle=h("div",{style:"color:#aaa;font-size:11px;font-weight:700"},state.myNameOpen?"▲ 접기":"▼ 펼치기");
-  myHead.appendChild(myTitleEl);
-  myHead.appendChild(myToggle);
+  myHead.appendChild(myTitleEl);myHead.appendChild(myToggle);
   myHead.onclick=function(){var next=!state.myNameOpen;localStorage.setItem('myNameOpen',next);setState({myNameOpen:next});};
   myCard.appendChild(myHead);
   if(state.myNameOpen){
@@ -615,7 +424,7 @@ htitle.appendChild(subEl);
   }
   cont.appendChild(myCard);
 
-  // 대양 1번 선택
+  // 대양 1번
   var d1Card=h("div",{className:"card",style:"border:1px solid #4a9eff22"});
   var d1Head=h("div",{style:"display:flex;justify-content:space-between;align-items:center;cursor:pointer"});
   var d1TitleEl=document.createElement("div");
@@ -625,234 +434,73 @@ htitle.appendChild(subEl);
   d1Head.appendChild(d1TitleEl);d1Head.appendChild(d1Toggle);
   d1Head.onclick=function(){var next=!state.d1Open;localStorage.setItem('d1Open',next);setState({d1Open:next});};
   d1Card.appendChild(d1Head);
-  var d1Grid=h("div",{className:"grid4",style:"margin-top:10px"});
-  if(!state.d1Open){cont.appendChild(d1Card);} else {
-  var todayStr=new Date().toDateString();
-  var hist=state.history||[];
-  WORKERS.forEach(function(name){
-    var btn=h("div",{className:"wbtn"+(state.firstWorker===name?" sel":""),style:"position:relative;padding-bottom:14px"});
-    var nameEl=document.createElement("div");
-    nameEl.textContent=name;
-    btn.appendChild(nameEl);
-    // 최근 이틀 표시
-    hist.forEach(function(h,hi){
-      if(h.name===name){
-        var d=new Date(h.date),t=new Date();t.setHours(0,0,0,0);d.setHours(0,0,0,0);
-        var diff=Math.round((t-d)/(1000*60*60*24));
-        var lbl=diff===0?"오늘 1번":diff===1?"어제 1번":"";
-        if(lbl){
-          var tag=document.createElement("div");
-          tag.style.cssText="font-size:9px;color:#ffd93d;font-weight:700;margin-top:2px";
-          tag.textContent=lbl;
-          btn.appendChild(tag);
+  if(state.d1Open){
+    var d1Grid=h("div",{className:"grid4",style:"margin-top:10px"});
+    var hist=state.history||[];
+    WORKERS.forEach(function(name){
+      var btn=h("div",{className:"wbtn"+(state.firstWorker===name?" sel":""),style:"position:relative;padding-bottom:14px"});
+      var nameEl=document.createElement("div");nameEl.textContent=name;
+      btn.appendChild(nameEl);
+      hist.forEach(function(h2){
+        if(h2.name===name){
+          var d=new Date(h2.date),t=new Date();t.setHours(0,0,0,0);d.setHours(0,0,0,0);
+          var diff=Math.round((t-d)/(1000*60*60*24));
+          var lbl=diff===0?"오늘 1번":diff===1?"어제 1번":"";
+          if(lbl){var tag=document.createElement("div");tag.style.cssText="font-size:9px;color:#ffd93d;font-weight:700;margin-top:2px";tag.textContent=lbl;btn.appendChild(tag);}
         }
-      }
+      });
+      (function(n){btn.onclick=function(){selectFirstWorker(n);};})(name);
+      d1Grid.appendChild(btn);
     });
-    btn.onclick=function(){selectFirstWorker(name);};
-    d1Grid.appendChild(btn);
-  });
-  d1Card.appendChild(d1Grid);
-  cont.appendChild(d1Card);}
-
-  if(!sched){
-    cont.appendChild(h("div",{className:"hint"},allSel?"👆 오늘 대양 1번을 선택해주세요":"📅 모든 날 차 유무를 선택해주세요"));
+    d1Card.appendChild(d1Grid);
   }
+  cont.appendChild(d1Card);
 
-  // 내 주간 근무
-  if(sched&&state.myName){
-    cont.appendChild(renderMySchedule(sched,wk,wd));
-  }
-
-  // 근무표
-  if(sched){
-    cont.appendChild(renderTable(sched,wk,wd,cd,merged));
-  }
-
+  if(!sched){cont.appendChild(h("div",{className:"hint"},allSel?"👆 오늘 대양 1번을 선택해주세요":"📅 모든 날 차 유무를 선택해주세요"));}
+  if(sched&&state.myName){cont.appendChild(renderMySchedule(sched,wk,wd));}
+  if(sched){cont.appendChild(renderTable(sched,wk,wd,cd,merged));}
   app.appendChild(cont);
 
-  // 팝업
-  if(state.popupDay!==null){
-    app.appendChild(renderPopup(state.popupDay,wk,wd,merged,dayExcl));
-  }
-  if(state.vacPopup){
-    app.appendChild(renderVacPopup());
-  }
-  if(state.settingsOpen){
-    app.appendChild(renderSettings());
-  }
-
+  if(state.popupDay!==null){app.appendChild(renderPopup(state.popupDay,wk,wd,merged,dayExcl));}
+  if(state.vacPopup){app.appendChild(renderVacPopup());}
+  if(state.settingsOpen){app.appendChild(renderSettings());}
 }
 
 var SITES=[
-  {key:"dae",  label:"대양",   color:"#4a9eff"},
-  {key:"sun",  label:"성우",   color:"#6effb4"},
-  {key:"yac",  label:"야차",   color:"#ffd93d"},
-  {key:"jay",  label:"제이",   color:"#ff9f7f"},
-  {key:"jad",  label:"자동차", color:"#88cc88"},
-  {key:"sunw", label:"일요근무",color:"#ffd93d"},
-  {key:"rest", label:"비번",color:"#888888"},
-  {key:"bib",  label:"비번",   color:"#cccc55"},
-  {key:"excl", label:"결근/휴가",color:"#ff6b6b"}
+  {key:"dae",label:"대양",color:"#4a9eff"},
+  {key:"sun",label:"성우",color:"#6effb4"},
+  {key:"yac",label:"야차",color:"#ffd93d"},
+  {key:"jay",label:"제이",color:"#ff9f7f"},
+  {key:"jad",label:"자동차",color:"#88cc88"},
+  {key:"sunw",label:"일요근무",color:"#ffd93d"},
+  {key:"rest",label:"비번",color:"#888888"},
+  {key:"bib",label:"비번",color:"#cccc55"},
+  {key:"excl",label:"결근/휴가",color:"#ff6b6b"}
 ];
 
 function renderTable(sched,wk,wd,cd,merged){
   var wrap=h("div",{className:"sw"});
-  // 내일 근무 복사 버튼
-  var swHead=h("div",{style:"display:flex;justify-content:space-between;align-items:center;padding:12px 14px 8px;border-bottom:1px solid #ffffff0a"});
-  swHead.appendChild(h("div",{style:"font-size:11px;color:#666;font-weight:700;letter-spacing:2px"},"▪ 주간 근무표"));
+  var swHead=h("div",{className:"sw-hd"});
+  swHead.appendChild(h("div",{},"▪ 주간 근무표"));
   if(sched&&sched.length>1){
-    // 내일 근무 텍스트 생성 함수
-    function formatNames(label, names){
-      if(!names||names.length===0) return "";
-      // 라벨을 4글자 기준으로 맞추기
-      var labels={"대양":"대양","성우":"성우","오선":"오선","C":"  C","휴가":"휴가","결근":"결근","차":"  차","일요근무":"일요근무"};
-      var lb=(labels[label]||label)+", ";
-      // 두번째 줄 들여쓰기: lb 길이만큼
-      var pad="";
-      for(var p=0;p<lb.length;p++) pad+=" ";
-      var line="";
-      for(var i=0;i<names.length;i+=4){
-        var chunk=names.slice(i,i+4);
-        if(i===0) line+=lb+chunk.join(", ")+"\n";
-        else line+=pad+chunk.join(", ")+"\n";
-      }
-      return line;
-    }
-    function makeTomorrowText(){
-      var tomorrow=sched[1];
-      var tIdx=1;
-      var dateStr=wd[tIdx];
-      var dayStr=wk[tIdx];
-      var line=dateStr.replace(".","/").replace(/^0/,"")+" "+dayStr+"\n";
-      var exclMap=tomorrow.excl||{};
-      var tomorrowMerged=merged[1]||{};
-      var vacNames=Object.keys(tomorrowMerged).filter(function(k){return tomorrowMerged[k]==="휴가";});
-      var absNames=Object.keys(tomorrowMerged).filter(function(k){return tomorrowMerged[k]==="결근";});
-      // 씨월드: merged 기준
-      var swNames=Object.keys(tomorrowMerged).filter(function(k){return tomorrowMerged[k]==="씨월드";});
-      if(tomorrow.hasCar){
-        line+=formatNames("대양",tomorrow.dae);
-        line+=formatNames("성우",tomorrow.sun);
-        line+=formatNames("차",tomorrow.yac);
-        line+=formatNames("오선",tomorrow.jay);
-        line+=formatNames("차",tomorrow.jad);
-      } else if(tomorrow.isSun){
-        line+=formatNames("일요근무",tomorrow.jad);
-      } else {
-        line+=formatNames("대양",tomorrow.dae);
-        line+=formatNames("성우",tomorrow.sun);
-        line+=formatNames("오선",tomorrow.jay);
-      }
-      // 씨월드 고정 인원 항상 표시
-      var seaworldFixed=["정태경"];
-      line+=formatNames("C",seaworldFixed);
-      line+=formatNames("휴가",vacNames);
-      line+=formatNames("결근",absNames);
-      return line.trim();
-    }
-
-    // 미리보기 버튼
-    var previewBtn=h("div",{style:"font-size:11px;color:#ffd93d;font-weight:700;cursor:pointer;padding:4px 10px;border:1px solid #ffd93d44;border-radius:8px;background:#ffd93d11"},"👁 미리보기");
-    previewBtn.onclick=function(){
-      var text=makeTomorrowText();
-      // 미리보기 팝업
-      var pbg=h("div",{style:"position:fixed;top:0;left:0;right:0;bottom:0;background:#000000cc;z-index:300;display:flex;align-items:flex-end;justify-content:center"});
-      pbg.onclick=function(){document.body.removeChild(pbg);};
-      var pinner=h("div",{style:"background:#13132a;border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-width:480px"});
-      pinner.onclick=function(e){e.stopPropagation();};
-      var phead=h("div",{style:"display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"});
-      phead.appendChild(h("div",{style:"font-size:14px;font-weight:900;color:#fff"},"📋 내일 근무 미리보기"));
-      var pclose=h("div",{style:"color:#555;font-size:20px;cursor:pointer"},  "✕");
-      pclose.onclick=function(){document.body.removeChild(pbg);};
-      phead.appendChild(pclose);
-      pinner.appendChild(phead);
-      // 오늘 근무표 (전날 확인용)
-      var todayDay=sched[0];
-      var todayExclMap=todayDay.excl||{};
-      var todayVac=Object.keys(todayExclMap).filter(function(k){return todayExclMap[k]==="휴가";});
-      var todayAbs=Object.keys(todayExclMap).filter(function(k){return todayExclMap[k]==="결근";});
-      var todaySw=Object.keys(todayExclMap).filter(function(k){return todayExclMap[k]==="씨월드";});
-      var todayText=wd[0].replace(".","/").replace(/^0/,"")+" "+wk[0]+" (오늘)\n";
-      if(todayDay.hasCar){
-        if(todayDay.dae&&todayDay.dae.length>0) todayText+="대양, "+todayDay.dae.join(", ")+"\n";
-        if(todayDay.sun&&todayDay.sun.length>0) todayText+="성우, "+todayDay.sun.join(", ")+"\n";
-        if(todayDay.yac&&todayDay.yac.length>0) todayText+="차, "+todayDay.yac.join(", ")+"\n";
-        if(todayDay.jay&&todayDay.jay.length>0) todayText+="오선, "+todayDay.jay.join(", ")+"\n";
-        if(todayDay.jad&&todayDay.jad.length>0) todayText+="차, "+todayDay.jad.join(", ")+"\n";
-      } else {
-        if(todayDay.dae&&todayDay.dae.length>0) todayText+="대양, "+todayDay.dae.join(", ")+"\n";
-        if(todayDay.sun&&todayDay.sun.length>0) todayText+="성우, "+todayDay.sun.join(", ")+"\n";
-        if(todayDay.jay&&todayDay.jay.length>0) todayText+="오선, "+todayDay.jay.join(", ")+"\n";
-      }
-      if(todaySw.length>0) todayText+="씨월드, "+todaySw.join(", ")+"\n";
-      if(todayVac.length>0) todayText+="휴가, "+todayVac.join(", ")+"\n";
-      if(todayAbs.length>0) todayText+="결근, "+todayAbs.join(", ")+"\n";
-
-      var todayLabel=h("div",{style:"font-size:10px;color:#666;font-weight:700;letter-spacing:2px;margin-bottom:6px"},"▪ 오늘 근무");
-      var todayPre=h("div",{style:"background:#0d0d1a;border-radius:10px;padding:12px;font-size:12px;line-height:1.9;color:#888;white-space:pre-wrap;word-break:break-all;margin-bottom:14px"},todayText.trim());
-      pinner.appendChild(todayLabel);
-      pinner.appendChild(todayPre);
-
-      // 내일 텍스트 표시
-      var tomorrowLabel=h("div",{style:"font-size:10px;color:#4a9eff88;font-weight:700;letter-spacing:2px;margin-bottom:6px"},"▪ 내일 근무 (카톡 발송용)");
-      var pre=h("div",{style:"background:#0d0d1a;border-radius:10px;padding:14px;font-size:13px;line-height:2;color:#e0e0f0;white-space:pre-wrap;word-break:break-all;margin-bottom:16px"},text);
-      pinner.appendChild(tomorrowLabel);
-      pinner.appendChild(pre);
-      // 복사 버튼
-      var cbtn=h("div",{style:"background:#4a9eff;color:#fff;font-size:14px;font-weight:700;border-radius:12px;padding:12px;text-align:center;cursor:pointer"},"📋 복사하기");
-      cbtn.onclick=function(){
-        if(navigator.clipboard){
-          navigator.clipboard.writeText(text).then(function(){
-            cbtn.textContent="✅ 복사됨!";
-            setTimeout(function(){document.body.removeChild(pbg);},1000);
-          });
-        } else {
-          var ta=document.createElement("textarea");
-          ta.value=text;document.body.appendChild(ta);ta.select();
-          document.execCommand("copy");document.body.removeChild(ta);
-          cbtn.textContent="✅ 복사됨!";
-          setTimeout(function(){document.body.removeChild(pbg);},1000);
-        }
-      };
-      pinner.appendChild(cbtn);
-      pbg.appendChild(pinner);
-      document.body.appendChild(pbg);
-    };
-
-    // 복사 버튼
-    var copyBtn=h("div",{style:"font-size:11px;color:#4a9eff;font-weight:700;cursor:pointer;padding:4px 10px;border:1px solid #4a9eff44;border-radius:8px;background:#4a9eff11"},"📋 내일 복사");
-    copyBtn.onclick=function(){
-      var line=makeTomorrowText();
-      if(navigator.clipboard){
-        navigator.clipboard.writeText(line).then(function(){
-          copyBtn.textContent="✅ 복사됨!";
-          setTimeout(function(){copyBtn.textContent="📋 내일 복사";},2000);
-        });
-      } else {
-        var ta=document.createElement("textarea");
-        ta.value=line;document.body.appendChild(ta);ta.select();
-        document.execCommand("copy");document.body.removeChild(ta);
-        copyBtn.textContent="✅ 복사됨!";
-        setTimeout(function(){copyBtn.textContent="📋 내일 복사";},2000);
-      }
-    };
     var btnRow=h("div",{style:"display:flex;gap:6px"});
-    btnRow.appendChild(previewBtn);
-    btnRow.appendChild(copyBtn);
+    var previewBtn=h("div",{style:"font-size:11px;color:#ffd93d;font-weight:700;cursor:pointer;padding:4px 10px;border:1px solid #ffd93d44;border-radius:8px;background:#ffd93d11"},"👁 미리보기");
+    previewBtn.onclick=function(){showPreview(sched,wk,wd,merged);};
+    var copyBtn=h("div",{style:"font-size:11px;color:#4a9eff;font-weight:700;cursor:pointer;padding:4px 10px;border:1px solid #4a9eff44;border-radius:8px;background:#4a9eff11"},"📋 내일 복사");
+    copyBtn.onclick=function(){copyTomorrow(sched,wk,wd,merged,copyBtn);};
+    btnRow.appendChild(previewBtn);btnRow.appendChild(copyBtn);
     swHead.appendChild(btnRow);
   }
   wrap.appendChild(swHead);
   var tw=h("div",{className:"tw"});
   var tbl=document.createElement("table");
-
-  // thead
   var thead=document.createElement("thead");
   var tr=document.createElement("tr");
   tr.appendChild(h("th",{className:"site-th"},"현장"));
   wk.forEach(function(day,idx){
     var isWe=day==="토"||day==="일";
     var th=document.createElement("th");
-    var exC=Object.keys(merged[idx]).length;
+    var exC=Object.keys(merged[idx]||{}).length;
     var inner="<div style='color:"+(isWe?"#ff6b6b":"#aaa")+";font-weight:900;font-size:13px'>"+day+"</div>";
     inner+="<div style='color:#444;font-size:9px'>"+wd[idx]+"</div>";
     inner+="<div style='font-size:9px;font-weight:700;color:"+(cd[idx]?"#4a9eff":"#ff6b6b")+"'>"+(cd[idx]?"차O":"차X")+"</div>";
@@ -860,10 +508,7 @@ function renderTable(sched,wk,wd,cd,merged){
     th.innerHTML=inner;
     tr.appendChild(th);
   });
-  thead.appendChild(tr);
-  tbl.appendChild(thead);
-
-  // tbody
+  thead.appendChild(tr);tbl.appendChild(thead);
   var tbody=document.createElement("tbody");
   SITES.forEach(function(site){
     var row=document.createElement("tr");
@@ -872,78 +517,39 @@ function renderTable(sched,wk,wd,cd,merged){
     sched.forEach(function(day,idx){
       var bg=idx%2===0?"#0f0f1a":"#111120";
       var td=document.createElement("td");
-      td.style.background=bg;
-      td.style.borderTop="1px solid #ffffff08";
-
+      td.style.background=bg;td.style.borderTop="1px solid #ffffff08";
       if(site.key==="excl"){
         var entries=Object.entries(day.excl||{});
         if(entries.length===0){td.innerHTML="<span style='color:#2a2a3a'>-</span>";}
-        else{
-          var html="";
-          entries.forEach(function(pair){
-            var t=pair[1];
-            html+="<span style='display:block;font-size:10px;line-height:1.8;color:"+(t==="결근"?"#ff6b6b":"#ffd93d")+";font-weight:700'>"+toNum(pair[0])+(t==="결근"?"결":"휴")+"</span>";
-          });
-          td.innerHTML=html;
-        }
+        else{var html="";entries.forEach(function(pair){var t=pair[1];html+="<span style='display:block;font-size:10px;line-height:1.8;color:"+(t==="결근"?"#ff6b6b":"#ffd93d")+";font-weight:700'>"+toNum(pair[0])+(t==="결근"?"결":"휴")+"</span>";});td.innerHTML=html;}
         row.appendChild(td);return;
       }
-
       if(day.isSun){
-        if(site.key==="sunw"){
-          var m=day.jad||[];
-          td.style.color="#ffd93d";
-          td.innerHTML=m.map(toNum).join(" ")||"-";
-        } else if(site.key==="jad"){
-          td.innerHTML="<span style='color:#2a2a3a'>-</span>";
-        } else if(site.key==="rest"){
-          var m=day.rest||[];
-          td.style.color="#888";
-          td.innerHTML=m.length>0?m.map(toNum).join(" "):"-";
-        } else if(site.key==="bib"){
-          var m=day.bib||[];
-          td.style.color="#cccc55";
-          td.innerHTML=m.length>0?m.map(toNum).join(" "):"-";
-        } else {
-          td.innerHTML="<span style='color:#2a2a3a'>-</span>";
-        }
+        if(site.key==="sunw"){var m=day.sunw||[];td.style.color="#ffd93d";td.innerHTML=m.map(toNum).join(" ")||"-";}
+        else if(site.key==="rest"){var m=day.rest||[];td.style.color="#888";td.innerHTML=m.length>0?m.map(toNum).join(" "):"-";}
+        else if(site.key==="bib"){var m=day.bib||[];td.style.color="#cccc55";td.innerHTML=m.length>0?m.map(toNum).join(" "):"-";}
+        else{td.innerHTML="<span style='color:#2a2a3a'>-</span>";}
         row.appendChild(td);return;
       }
-
       var isEmpty=(site.key==="yac"&&!day.hasCar)||(site.key==="rest"&&day.hasCar)||(site.key==="jad"&&!day.hasCar)||(site.key==="sunw"&&!day.isSun);
       var members=day[site.key]||[];
-      if(isEmpty||members.length===0){
-        td.innerHTML="<span style='color:#2a2a3a'>-</span>";
-      } else {
+      if(isEmpty||members.length===0){td.innerHTML="<span style='color:#2a2a3a'>-</span>";}
+      else{
         td.style.color=site.color;
         var html="";
-        members.forEach(function(n){
-          var num=toNum(n);
-          if(state.myName&&n===state.myName) html+="<span class='hl'>"+num+"</span> ";
-          else html+=num+" ";
-        });
+        members.forEach(function(n){var num=toNum(n);if(state.myName&&n===state.myName)html+="<span class='hl'>"+num+"</span> ";else html+=num+" ";});
         td.innerHTML=html.trim();
       }
       row.appendChild(td);
     });
     tbody.appendChild(row);
   });
-  tbl.appendChild(tbody);
-  tw.appendChild(tbl);
-  wrap.appendChild(tw);
-
-  // 번호 참고
+  tbl.appendChild(tbody);tw.appendChild(tbl);wrap.appendChild(tw);
   var ref=h("div",{className:"ref-wrap"});
   ref.appendChild(h("div",{className:"ref-title"},"▪ 번호 참고"));
   var rg=h("div",{className:"ref-grid"});
-  WORKERS.forEach(function(name,i){
-    var item=document.createElement("div");
-    item.className="ref-item";
-    item.innerHTML="<span class='ref-num'>"+(i+1)+"</span> "+name;
-    rg.appendChild(item);
-  });
-  ref.appendChild(rg);
-  wrap.appendChild(ref);
+  WORKERS.forEach(function(name,i){var item=document.createElement("div");item.className="ref-item";item.innerHTML="<span class='ref-num'>"+(i+1)+"</span> "+name;rg.appendChild(item);});
+  ref.appendChild(rg);wrap.appendChild(ref);
   return wrap;
 }
 
@@ -952,27 +558,19 @@ function renderMySchedule(sched,wk,wd){
   var card=h("div",{className:"my-card"});
   card.appendChild(h("div",{className:"my-title"},"▪ "+name+" · 내 주간 근무"));
   var rows=h("div",{className:"my-row"});
-  var LABELS={dae:"대양",sun:"성우",yac:"야차",jay:"제이",jad:"자동차",rest:"비번",bib:"비번"};
-  var COLORS={dae:"#4a9eff",sun:"#6effb4",yac:"#ffd93d",jay:"#ff9f7f",jad:"#88cc88",rest:"#888",bib:"#cccc55"};
+  var LABELS={dae:"대양",sun:"성우",yac:"야차",jay:"제이",jad:"자동차",rest:"비번",bib:"비번",sunw:"일요근무"};
+  var COLORS={dae:"#4a9eff",sun:"#6effb4",yac:"#ffd93d",jay:"#ff9f7f",jad:"#88cc88",rest:"#888",bib:"#cccc55",sunw:"#ffd93d"};
   sched.forEach(function(day,idx){
     var site="",color="#aaa",pos=0;
     if(day.isSun){
-      if((day.jad||[]).indexOf(name)>=0){pos=(day.jad||[]).indexOf(name)+1;site="일요근무("+pos+"번)";color="#ffd93d";}
+      if((day.sunw||[]).indexOf(name)>=0){pos=(day.sunw||[]).indexOf(name)+1;site="일요근무("+pos+"번)";color="#ffd93d";}
       else if((day.bib||[]).indexOf(name)>=0){site="비번";color="#cccc55";}
       else if((day.rest||[]).indexOf(name)>=0){site="비번";color="#888";}
       else site="미배정";
     } else {
       var NOPOS=["jad","rest","bib"];
       var keys=["dae","sun","yac","jay","jad","bib","rest"];
-      for(var ki=0;ki<keys.length;ki++){
-        var k=keys[ki];
-        var arr=day[k]||[];
-        if(arr.indexOf(name)>=0){
-          pos=arr.indexOf(name)+1;
-          site=NOPOS.indexOf(k)>=0?LABELS[k]:LABELS[k]+"("+pos+"번)";
-          color=COLORS[k];break;
-        }
-      }
+      for(var ki=0;ki<keys.length;ki++){var k=keys[ki],arr=day[k]||[];if(arr.indexOf(name)>=0){pos=arr.indexOf(name)+1;site=NOPOS.indexOf(k)>=0?LABELS[k]:LABELS[k]+"("+pos+"번)";color=COLORS[k];break;}}
       if(!site)site="미배정";
     }
     var isWe=wk[idx]==="토"||wk[idx]==="일";
@@ -983,8 +581,99 @@ function renderMySchedule(sched,wk,wd){
     item.appendChild(h("div",{className:"my-site",style:"color:"+color},site));
     rows.appendChild(item);
   });
-  card.appendChild(rows);
-  return card;
+  card.appendChild(rows);return card;
+}
+
+function formatNames(label,names){
+  if(!names||names.length===0)return "";
+  var labels={"대양":"대양","성우":"성우","오선":"오선","씨월드":"씨월드","C":"  C","휴가":"휴가","결근":"결근","차":"  차","일요근무":"일요근무"};
+  var lb=(labels[label]||label)+", ";
+  var pad="";for(var p=0;p<lb.length;p++)pad+=" ";
+  var line="";
+  for(var i=0;i<names.length;i+=4){var chunk=names.slice(i,i+4);if(i===0)line+=lb+chunk.join(", ")+"\n";else line+=pad+chunk.join(", ")+"\n";}
+  return line;
+}
+
+function makeTomorrowText(sched,wk,wd,merged){
+  var tomorrow=sched[1];
+  var tIdx=1;
+  var dateStr=wd[tIdx].replace(".","/").replace(/^0/,"")+" "+wk[tIdx];
+  var line=dateStr+"\n";
+  var tomorrowMerged=merged[1]||{};
+  var vacNames=Object.keys(tomorrowMerged).filter(function(k){return tomorrowMerged[k]==="휴가";});
+  var absNames=Object.keys(tomorrowMerged).filter(function(k){return tomorrowMerged[k]==="결근";});
+  var seaworldFixed=["정태경"];
+  if(tomorrow.hasCar){
+    line+=formatNames("대양",tomorrow.dae);
+    line+=formatNames("성우",tomorrow.sun);
+    line+=formatNames("차",tomorrow.yac);
+    line+=formatNames("오선",tomorrow.jay);
+    line+=formatNames("차",tomorrow.jad);
+  } else if(tomorrow.isSun){
+    line+=formatNames("일요근무",tomorrow.sunw);
+  } else {
+    line+=formatNames("대양",tomorrow.dae);
+    line+=formatNames("성우",tomorrow.sun);
+    line+=formatNames("오선",tomorrow.jay);
+  }
+  line+=formatNames("C",seaworldFixed);
+  line+=formatNames("휴가",vacNames);
+  line+=formatNames("결근",absNames);
+  return line.trim();
+}
+
+function makeTodayText(sched,wk,wd,merged){
+  var today=sched[0];
+  var todayMerged=merged[0]||{};
+  var vacNames=Object.keys(todayMerged).filter(function(k){return todayMerged[k]==="휴가";});
+  var absNames=Object.keys(todayMerged).filter(function(k){return todayMerged[k]==="결근";});
+  var swNames=Object.keys(todayMerged).filter(function(k){return todayMerged[k]==="씨월드";});
+  var line=wd[0].replace(".","/").replace(/^0/,"")+" "+wk[0]+" (오늘)\n";
+  if(today.hasCar){
+    line+=formatNames("대양",today.dae);
+    line+=formatNames("성우",today.sun);
+    line+=formatNames("차",today.yac);
+    line+=formatNames("오선",today.jay);
+    line+=formatNames("차",today.jad);
+  } else {
+    line+=formatNames("대양",today.dae);
+    line+=formatNames("성우",today.sun);
+    line+=formatNames("오선",today.jay);
+  }
+  if(swNames.length>0)line+=formatNames("씨월드",swNames);
+  if(vacNames.length>0)line+=formatNames("휴가",vacNames);
+  if(absNames.length>0)line+=formatNames("결근",absNames);
+  return line.trim();
+}
+
+function showPreview(sched,wk,wd,merged){
+  var text=makeTomorrowText(sched,wk,wd,merged);
+  var todayText=makeTodayText(sched,wk,wd,merged);
+  var pbg=h("div",{style:"position:fixed;top:0;left:0;right:0;bottom:0;background:#000000cc;z-index:300;display:flex;align-items:flex-end;justify-content:center"});
+  pbg.onclick=function(){document.body.removeChild(pbg);};
+  var pinner=h("div",{style:"background:#13132a;border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto"});
+  pinner.onclick=function(e){e.stopPropagation();};
+  var phead=h("div",{style:"display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"});
+  phead.appendChild(h("div",{style:"font-size:14px;font-weight:900;color:#fff"},"📋 내일 근무 미리보기"));
+  var pclose=h("div",{style:"color:#555;font-size:20px;cursor:pointer"},"✕");
+  pclose.onclick=function(){document.body.removeChild(pbg);};
+  phead.appendChild(pclose);pinner.appendChild(phead);
+  pinner.appendChild(h("div",{style:"font-size:10px;color:#666;font-weight:700;letter-spacing:2px;margin-bottom:6px"},"▪ 오늘 근무"));
+  pinner.appendChild(h("div",{style:"background:#0d0d1a;border-radius:10px;padding:12px;font-size:12px;line-height:1.9;color:#888;white-space:pre-wrap;margin-bottom:14px"},todayText));
+  pinner.appendChild(h("div",{style:"font-size:10px;color:#4a9eff88;font-weight:700;letter-spacing:2px;margin-bottom:6px"},"▪ 내일 근무 (카톡 발송용)"));
+  pinner.appendChild(h("div",{style:"background:#0d0d1a;border-radius:10px;padding:14px;font-size:13px;line-height:2;color:#e0e0f0;white-space:pre-wrap;margin-bottom:16px"},text));
+  var cbtn=h("div",{style:"background:#4a9eff;color:#fff;font-size:14px;font-weight:700;border-radius:12px;padding:12px;text-align:center;cursor:pointer"},"📋 복사하기");
+  cbtn.onclick=function(){
+    if(navigator.clipboard){navigator.clipboard.writeText(text).then(function(){cbtn.textContent="✅ 복사됨!";setTimeout(function(){document.body.removeChild(pbg);},1000);});}
+    else{var ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);cbtn.textContent="✅ 복사됨!";setTimeout(function(){document.body.removeChild(pbg);},1000);}
+  };
+  pinner.appendChild(cbtn);pbg.appendChild(pinner);document.body.appendChild(pbg);
+}
+
+function copyTomorrow(sched,wk,wd,merged,btn){
+  var text=makeTomorrowText(sched,wk,wd,merged);
+  if(navigator.clipboard){navigator.clipboard.writeText(text).then(function(){btn.textContent="✅ 복사됨!";setTimeout(function(){btn.textContent="📋 내일 복사";},2000);});}
+  else{var ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);btn.textContent="✅ 복사됨!";setTimeout(function(){btn.textContent="📋 내일 복사";},2000);}
 }
 
 function renderPopup(idx,wk,wd,merged,dayExcl){
@@ -1000,28 +689,20 @@ function renderPopup(idx,wk,wd,merged,dayExcl){
   phead.appendChild(ptitle);phead.appendChild(pclose);
   inner.appendChild(phead);
   inner.appendChild(h("div",{className:"phint"},"▪ 제외 인원 (탭: 없음→결근→휴가→씨월드→없음)"));
-  var grid=h("div",{className:"grid3"});
+  var grid=h("div",{className:"grid4"});
   WORKERS.forEach(function(name){
     var manual=(dayExcl[idx]||{})[name];
     var isAuto=!manual&&!!(merged[idx]||{})[name];
     var btnCls="eb"+(manual==="결근"?" absent":manual==="휴가"?" vacation":manual==="씨월드"?" seaworld":isAuto?" autovac":"");
     var nameCls="en"+(manual==="결근"?" absent":manual==="휴가"?" vacation":manual==="씨월드"?" seaworld":isAuto?" autovac":"");
-    var typeCls="et "+(manual==="결근"?"absent":manual==="씨월드"?"seaworld":"vacation");
-    var showType=manual||(isAuto?"휴가(자동)":"");
-    var btn=h("div",{className:btnCls});
-    btn.appendChild(h("div",{className:nameCls},name));
-    if(showType){btn.appendChild(h("div",{className:typeCls},showType));}
-    btn.onclick=function(){
-      btn.classList.remove("popping");
-      void btn.offsetWidth;
-      btn.classList.add("popping");
-      toggleExcl(idx,name);
-    };
-    grid.appendChild(btn);
+    var showType=manual||(isAuto?(merged[idx]||{})[name]+"(자동)":"");
+    var btn2=h("div",{className:btnCls});
+    btn2.appendChild(h("div",{className:nameCls},name));
+    if(showType){btn2.appendChild(h("div",{className:"et "+(manual==="결근"?"absent":manual==="씨월드"?"seaworld":"vacation")},showType));}
+    (function(n){btn2.onclick=function(){toggleExcl(idx,n);};})(name);
+    grid.appendChild(btn2);
   });
-  inner.appendChild(grid);
-  bg.appendChild(inner);
-  return bg;
+  inner.appendChild(grid);bg.appendChild(inner);return bg;
 }
 
 function renderVacPopup(){
@@ -1036,7 +717,6 @@ function renderVacPopup(){
   pclose.onclick=function(){setState({vacPopup:false});};
   phead.appendChild(ptitle);phead.appendChild(pclose);
   inner.appendChild(phead);
-  // 전체 합산 후 날짜순 정렬
   var allVac=VACATION_SCHEDULE.map(function(v){return Object.assign({},v,{isSeaworld:false});})
     .concat(SEAWORLD_SCHEDULE.map(function(v){return Object.assign({},v,{isSeaworld:true});}));
   allVac.sort(function(a,b){return a.start>b.start?1:a.start<b.start?-1:0;});
@@ -1049,46 +729,15 @@ function renderVacPopup(){
     var nameEl=document.createElement("div");
     nameEl.style.cssText="min-width:80px;font-size:13px;font-weight:700;color:"+color;
     nameEl.textContent=v.name+(v.isSeaworld?" (씨월드)":"");
-    if(isActive){
-      var badge=document.createElement("span");
-      badge.style.cssText="font-size:9px;background:"+(v.isSeaworld?"#88eeff33":"#ffd93d33")+";color:"+(v.isSeaworld?"#88eeff":"#ffd93d")+";border-radius:4px;padding:1px 5px;margin-left:6px";
-      badge.textContent="휴가중";
-      nameEl.appendChild(badge);
-    }
+    if(isActive){var badge=document.createElement("span");badge.style.cssText="font-size:9px;background:"+(v.isSeaworld?"#88eeff33":"#ffd93d33")+";color:"+(v.isSeaworld?"#88eeff":"#ffd93d")+";border-radius:4px;padding:1px 5px;margin-left:6px";badge.textContent="휴가중";nameEl.appendChild(badge);}
     var dateEl=document.createElement("div");
     dateEl.style.cssText="font-size:11px;color:"+(isPast?"#444":"#888")+";margin-left:8px";
     dateEl.textContent=fmtVacDate(v.start)+" ~ "+fmtVacDate(v.end);
-    row.appendChild(nameEl);row.appendChild(dateEl);
-    inner.appendChild(row);
+    row.appendChild(nameEl);row.appendChild(dateEl);inner.appendChild(row);
   });
-  bg.appendChild(inner);
-  return bg;
+  bg.appendChild(inner);return bg;
 }
 
-function selectMyName(name){
-  var newName=state.myName===name?"":name;
-  localStorage.setItem('myName',newName);
-  setState({myName:newName});
-}
-function selectFirstWorker(name){
-  var isDesel=state.firstWorker===name;
-  var newName=isDesel?"":name;
-  if(!isDesel&&name){
-    // history에 오늘 날짜+이름 저장 (최근 2개만)
-    var today=new Date().toDateString();
-    var hist=state.history.filter(function(h){return h.date!==today;});
-    hist.unshift({date:today,name:name});
-    if(hist.length>2)hist=hist.slice(0,2);
-    localStorage.setItem('dayHistory',JSON.stringify(hist));
-    localStorage.setItem('firstWorker',JSON.stringify({date:new Date().toDateString(),name:newName}));
-    saveToFirebase({firstWorker:newName});
-    setState({firstWorker:newName,history:hist});
-  } else {
-    localStorage.setItem('firstWorker',JSON.stringify({date:new Date().toDateString(),name:newName}));
-    saveToFirebase({firstWorker:newName});
-    setState({firstWorker:newName});
-  }
-}
 function renderSettings(){
   var s=state.settings;
   var bg=h("div",{className:"settings-bg"});
@@ -1099,58 +748,50 @@ function renderSettings(){
   head.appendChild(h("div",{className:"settings-title"},"⚙️ 설정"));
   var cls=h("div",{className:"settings-close"},"✕");
   cls.onclick=function(){setState({settingsOpen:false});};
-  head.appendChild(cls);
-  inner.appendChild(head);
-
-  // 폰트
+  head.appendChild(cls);inner.appendChild(head);
   var sec1=h("div",{className:"settings-section"});
   sec1.appendChild(h("div",{className:"settings-label"},"▪ 폰트"));
   var opts1=h("div",{className:"settings-options"});
-  [{v:"noto",l:"Noto Sans"},{v:"system",l:"시스템"},{v:"nanum",l:"나눔고딕"}].forEach(function(opt){
+  [{v:"system",l:"시스템"},{v:"noto",l:"Noto Sans"},{v:"nanum",l:"나눔고딕"}].forEach(function(opt){
     var btn=h("div",{className:"settings-opt"+(s.font===opt.v?" active":"")},opt.l);
-    btn.onclick=function(){var ns=Object.assign({},state.settings,{font:opt.v});setState({settings:ns});};
+    btn.onclick=function(){setState({settings:Object.assign({},state.settings,{font:opt.v})});};
     opts1.appendChild(btn);
   });
-  sec1.appendChild(opts1);
-  inner.appendChild(sec1);
-
-  // 글씨 크기
+  sec1.appendChild(opts1);inner.appendChild(sec1);
   var sec2=h("div",{className:"settings-section"});
   sec2.appendChild(h("div",{className:"settings-label"},"▪ 글씨 크기"));
-  var sizeRow=h("div",{style:"display:flex;align-items:center;gap:12px"});
   var sizeMap=[10,11,12,13,14,15,16];
+  var sizeRow=h("div",{style:"display:flex;align-items:center;gap:12px"});
   var btnMinus=h("div",{className:"settings-opt",style:"font-size:18px;padding:6px 16px;font-weight:900"},"-");
-  btnMinus.onclick=function(){var ns=Object.assign({},state.settings,{size:Math.max(0,state.settings.size-1)});setState({settings:ns});};
+  btnMinus.onclick=function(){setState({settings:Object.assign({},state.settings,{size:Math.max(0,state.settings.size-1)})});};
   var sizeVal=h("div",{style:"font-size:15px;font-weight:700;color:#fff;min-width:40px;text-align:center"},sizeMap[s.size]+"px");
-  var btnPlus=h("div",{className:"settings-opt",style:"font-size:18px;padding:6px 16px;font-weight:900"},"+" );
-  btnPlus.onclick=function(){var ns=Object.assign({},state.settings,{size:Math.min(6,state.settings.size+1)});setState({settings:ns});};
-  sizeRow.appendChild(btnMinus);
-  sizeRow.appendChild(sizeVal);
-  sizeRow.appendChild(btnPlus);
-  sec2.appendChild(sizeRow);
-  inner.appendChild(sec2);
-
-  // 스킨
-  var sec3=h("div",{className:"settings-section"});
-  sec3.appendChild(h("div",{className:"settings-label"},"▪ 스킨"));
-  var opts3=h("div",{className:"settings-options"});
-  [{v:"dark",l:"🌌 다크"},{v:"navy",l:"🌊 네이비"},{v:"black",l:"⬛ 블랙"}].forEach(function(opt){
-    var btn=h("div",{className:"settings-opt"+(s.skin===opt.v?" active":"")},opt.l);
-    btn.onclick=function(){var ns=Object.assign({},state.settings,{skin:opt.v});setState({settings:ns});};
-    opts3.appendChild(btn);
-  });
-  sec3.appendChild(opts3);
-  inner.appendChild(sec3);
-
-  bg.appendChild(inner);
-  return bg;
+  var btnPlus=h("div",{className:"settings-opt",style:"font-size:18px;padding:6px 16px;font-weight:900"},"+");
+  btnPlus.onclick=function(){setState({settings:Object.assign({},state.settings,{size:Math.min(6,state.settings.size+1)})});};
+  sizeRow.appendChild(btnMinus);sizeRow.appendChild(sizeVal);sizeRow.appendChild(btnPlus);
+  sec2.appendChild(sizeRow);inner.appendChild(sec2);
+  bg.appendChild(inner);return bg;
 }
 
+function selectMyName(name){var newName=state.myName===name?"":name;localStorage.setItem('myName',newName);setState({myName:newName});}
+function selectFirstWorker(name){
+  var isDesel=state.firstWorker===name;
+  var newName=isDesel?"":name;
+  if(!isDesel&&name){
+    var today=new Date().toDateString();
+    var hist=state.history.filter(function(h){return h.date!==today;});
+    hist.unshift({date:today,name:name});
+    if(hist.length>2)hist=hist.slice(0,2);
+    localStorage.setItem('dayHistory',JSON.stringify(hist));
+    localStorage.setItem('firstWorker',JSON.stringify({date:today,name:newName}));
+    setState({firstWorker:newName,history:hist});
+  } else {
+    localStorage.setItem('firstWorker',JSON.stringify({date:new Date().toDateString(),name:newName}));
+    setState({firstWorker:newName});
+  }
+}
 function toggleCar(idx,val){
-  var c=state.carDays.slice();
-  c[idx]=c[idx]===val?null:val;
+  var c=state.carDays.slice();c[idx]=c[idx]===val?null:val;
   localStorage.setItem('carPlan',JSON.stringify({date:new Date().toDateString(),days:c}));
-  saveToFirebase({carDays:c});
   setState({carDays:c});
 }
 function toggleExcl(idx,name){
@@ -1158,14 +799,10 @@ function toggleExcl(idx,name){
     if(i!==idx)return e;
     var u=Object.assign({},e);
     var cur=u[name];
-    if(!cur)u[name]="결근";
-    else if(cur==="결근")u[name]="휴가";
-    else if(cur==="휴가")u[name]="씨월드";
-    else delete u[name];
+    if(!cur)u[name]="결근";else if(cur==="결근")u[name]="휴가";else if(cur==="휴가")u[name]="씨월드";else delete u[name];
     return u;
   });
   localStorage.setItem('dayExcludes',JSON.stringify({date:new Date().toDateString(),data:d}));
-  saveToFirebase({dayExcludes:d});
   setState({dayExcludes:d});
 }
 
