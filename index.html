@@ -48,12 +48,7 @@ body{background:#0d0d1a;color:#e0e0f0;font-family:'Noto Sans KR',sans-serif;min-
 .sun-cnt{font-size:13px;font-weight:700;min-width:20px;text-align:center}
 .vac-btn-wrap{margin-top:10px;text-align:center}
 .vac-btn{display:inline-block;padding:6px 20px;border-radius:20px;background:#ffd93d22;border:1px solid #ffd93d44;color:#ffd93d;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1px}
-.tide-popup-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:#000000cc;z-index:200;display:flex;align-items:flex-end;justify-content:center}
-.tide-popup{background:#13132a;border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto}
-.tide-row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #ffffff08;gap:12px}
-.tide-date{font-size:14px;color:#888;min-width:60px}
-.tide-num{font-size:18px;font-weight:900;min-width:50px}
-.tide-times{font-size:13px;color:#aaa;line-height:1.8}
+
 .content{padding:16px 16px 60px;max-width:540px;margin:0 auto}
 .card{background:#13132a;border-radius:14px;padding:14px;margin-bottom:14px}
 .card-title{font-size:11px;font-weight:700;letter-spacing:2px;margin-bottom:10px}
@@ -492,7 +487,7 @@ function render(){
   var htitle=h("div",{className:"header-title"});
   var subEl=document.createElement("div");
 subEl.className="header-sub";
-subEl.innerHTML="FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v7.6</span>";
+subEl.innerHTML="FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v7.7</span>";
 var reloadBtn=document.createElement("span");
 reloadBtn.style.cssText="color:#ffd93d;font-size:14px;cursor:pointer;margin-left:8px";
 reloadBtn.textContent="🔄";
@@ -586,9 +581,7 @@ htitle.appendChild(subEl);
   hdr.appendChild(bottomRow);
 
   var vb=h("div",{style:"display:flex;gap:8px;margin-top:10px;justify-content:center"});
-  var tbtn=h("div",{className:"vac-btn",style:"background:#4a9eff22;border-color:#4a9eff44;color:#4a9eff"},"🌊 물때");
-  tbtn.onclick=function(){loadTideData();};
-  vb.appendChild(tbtn);
+
   var vbtn=h("div",{className:"vac-btn"},"📋 연간 휴가 리스트");
   vbtn.onclick=function(){setState({vacPopup:true});};
   vb.appendChild(vbtn);
@@ -689,9 +682,7 @@ htitle.appendChild(subEl);
   if(state.settingsOpen){
     app.appendChild(renderSettings());
   }
-  if(state.tidePopup){
-    app.appendChild(renderTidePopup());
-  }
+
 }
 
 var SITES=[
@@ -1153,81 +1144,6 @@ function renderSettings(){
   sec3.appendChild(opts3);
   inner.appendChild(sec3);
 
-  bg.appendChild(inner);
-  return bg;
-}
-
-// 목포 물때 - GitHub Actions로 매일 업데이트
-function loadTideData(){
-  setState({tidePopup:true, tideData:null});
-  var url='https://raw.githubusercontent.com/diskpark/team/main/tide.json?t='+Date.now();
-  fetch(url)
-    .then(function(r){return r.json();})
-    .then(function(data){setState({tideData:data.days||[]});})
-    .catch(function(e){setState({tideData:[]});});
-}
-
-function getTideNumLabel(dateStr){
-  // dateStr: 'YYYYMMDD'
-  var base=new Date('2026-01-29T00:00:00Z');
-  var d=new Date(dateStr.slice(0,4)+'-'+dateStr.slice(4,6)+'-'+dateStr.slice(6,8)+'T00:00:00Z');
-  var lunarAge=((d-base)/(1000*60*60*24*29.53059)%1+1)%1*29.53;
-  var ld=Math.floor(lunarAge)+1;
-  var num=ld<=15?ld:30-ld;
-  var labels={1:'1물',2:'2물',3:'3물',4:'4물',5:'5물',6:'6물',
-    7:'조금',8:'조금',9:'무시',10:'1물',11:'2물',12:'3물',
-    13:'사리',14:'사리',15:'한사리'};
-  return {num:num,label:labels[num]||num+'물'};
-}
-
-function renderTidePopup(){
-  var KRD=["일","월","화","수","목","금","토"];
-  var bg=h("div",{className:"tide-popup-bg"});
-  bg.onclick=function(){setState({tidePopup:false,tideData:null});};
-  var inner=h("div",{className:"tide-popup"});
-  inner.onclick=function(e){e.stopPropagation();};
-  var phead=h("div",{style:"display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"});
-  phead.appendChild(h("div",{style:"font-size:16px;font-weight:900;color:#fff"},"🌊 목포 물때표"));
-  var cls=h("div",{style:"color:#555;font-size:20px;cursor:pointer"},"✕");
-  cls.onclick=function(){setState({tidePopup:false,tideData:null});};
-  phead.appendChild(cls);
-  inner.appendChild(phead);
-
-  if(!state.tideData){
-    inner.appendChild(h("div",{style:"text-align:center;color:#888;padding:30px;font-size:14px"},"🌊 로딩중..."));
-  } else if(state.tideData.length===0){
-    inner.appendChild(h("div",{style:"text-align:center;color:#888;padding:30px;font-size:14px"},"데이터를 불러올 수 없어요"));
-  } else {
-    state.tideData.forEach(function(day){
-      var isWe=day.date.indexOf('토')>=0||day.date.indexOf('일')>=0;
-      var info=getTideNumLabel(day.ymd);
-      var row=h("div",{className:"tide-row"});
-
-      var dateEl=h("div",{className:"tide-date",style:"color:"+(isWe?"#ff6b6b":"#888")});
-      dateEl.textContent=day.date;
-      row.appendChild(dateEl);
-
-      var numEl=h("div",{className:"tide-num",style:"color:"+(info.num>=13?"#ff6b6b":info.label==="조금"||info.label==="무시"?"#888":"#ffd93d")});
-      numEl.textContent=info.label;
-      row.appendChild(numEl);
-
-      var timesEl=h("div",{className:"tide-times"});
-      if(day.tides&&day.tides.length>0){
-        day.tides.forEach(function(t){
-          var isHigh=t.type==='고조';
-          var span=document.createElement("div");
-          span.style.cssText="display:inline-block;margin-right:12px;margin-bottom:2px;font-size:15px;color:"+(isHigh?"#4a9eff":"#ff9f7f");
-          span.textContent=(isHigh?"▲고":"▽저")+" "+t.time;
-          timesEl.appendChild(span);
-        });
-      } else {
-        timesEl.textContent="데이터 없음";
-        timesEl.style.color="#555";
-      }
-      row.appendChild(timesEl);
-      inner.appendChild(row);
-    });
-  }
   bg.appendChild(inner);
   return bg;
 }
