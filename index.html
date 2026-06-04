@@ -85,7 +85,7 @@ td.site-td{padding:8px;font-weight:700;font-size:11px;background:#13132a;positio
 .settings-options{display:flex;gap:8px;flex-wrap:wrap}
 .settings-opt{border:1.5px solid #333;border-radius:10px;padding:8px 14px;font-size:12px;color:#aaa;cursor:pointer;background:#1a1a2e;user-select:none;transition:all 0.15s}
 .settings-opt.active{border-color:#4a9eff;color:#fff;background:#4a9eff22;font-weight:700}
-.sun-btn{width:22px;height:22px;border-radius:6px;background:#1a1a2e;border:1px solid #333;color:#aaa;font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}
+.sun-btn{width:26px;height:26px;border-radius:6px;background:#1a1a2e;border:1px solid #333;color:#aaa;font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}
 .sun-cnt{font-size:13px;font-weight:700;min-width:20px;text-align:center}
 </style>
 </head>
@@ -329,21 +329,7 @@ function render(){
     } else {btnE.textContent="제외";}
     (function(i){btnE.onclick=function(){setState({popupDay:i});};})(idx);
     col.appendChild(btnE);
-    if(day==="일"){
-      var sc2=document.createElement("div");
-      sc2.style.cssText="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:2px";
-      var slbl=h("div",{style:"font-size:9px;color:#888"},"인원");
-      var sr=document.createElement("div");
-      sr.style.cssText="display:flex;align-items:center;gap:3px";
-      var bm=h("div",{className:"sun-btn"},"-");
-      (function(){bm.onclick=function(){var v=Math.max(0,state.sundayCount-1);localStorage.setItem('sundayCount',v);setState({sundayCount:v});};})();
-      var cnt=h("div",{className:"sun-cnt",style:"color:"+(sc>0?"#ffd93d":"#555")},String(sc));
-      var bp=h("div",{className:"sun-btn"},"+");
-      (function(){bp.onclick=function(){var v=Math.min(29,state.sundayCount+1);localStorage.setItem('sundayCount',v);setState({sundayCount:v});};})();
-      sr.appendChild(bm);sr.appendChild(cnt);sr.appendChild(bp);
-      sc2.appendChild(slbl);sc2.appendChild(sr);
-      col.appendChild(sc2);
-    }
+
     dayRow.appendChild(col);
   });
   hdr.appendChild(dayRow);
@@ -373,18 +359,16 @@ function render(){
     infoLeft.appendChild(infoLine);
   }
   var infoRight=h("div",{style:"display:flex;flex-direction:column;align-items:flex-end;gap:2px"});
-  if(wk.indexOf("일")>=0){
-    var lbl2=h("div",{style:"font-size:9px;color:#888"},"인원");
-    var sr2=document.createElement("div");
-    sr2.style.cssText="display:flex;align-items:center;gap:3px";
-    var bm2=h("div",{className:"sun-btn"},"-");
-    bm2.onclick=function(){var v=Math.max(0,state.sundayCount-1);localStorage.setItem('sundayCount',v);setState({sundayCount:v});};
-    var cnt2=h("div",{className:"sun-cnt",style:"color:"+(sc>0?"#ffd93d":"#555")},String(sc));
-    var bp2=h("div",{className:"sun-btn"},"+");
-    bp2.onclick=function(){var v=Math.min(29,state.sundayCount+1);localStorage.setItem('sundayCount',v);setState({sundayCount:v});};
-    sr2.appendChild(bm2);sr2.appendChild(cnt2);sr2.appendChild(bp2);
-    infoRight.appendChild(lbl2);infoRight.appendChild(sr2);
-  }
+  var lbl2=h("div",{style:"font-size:11px;color:#888"},"인원");
+  var sr2=document.createElement("div");
+  sr2.style.cssText="display:flex;align-items:center;gap:3px";
+  var bm2=h("div",{className:"sun-btn"},"-");
+  bm2.onclick=function(){var v=Math.max(0,state.sundayCount-1);localStorage.setItem('sundayCount',v);setState({sundayCount:v});};
+  var cnt2=h("div",{className:"sun-cnt",style:"color:"+(sc>0?"#ffd93d":"#555")},String(sc));
+  var bp2=h("div",{className:"sun-btn"},"+");
+  bp2.onclick=function(){var v=Math.min(29,state.sundayCount+1);localStorage.setItem('sundayCount',v);setState({sundayCount:v});};
+  sr2.appendChild(bm2);sr2.appendChild(cnt2);sr2.appendChild(bp2);
+  infoRight.appendChild(lbl2);infoRight.appendChild(sr2);
   bottomRow.appendChild(infoLeft);bottomRow.appendChild(infoRight);
   hdr.appendChild(bottomRow);
 
