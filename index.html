@@ -10,11 +10,11 @@
 <link rel="manifest" href="manifest.json">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>지게차 주간 근무표</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#0d0d1a;color:#e0e0f0;font-family:'Noto Sans KR',sans-serif;min-height:100vh}
+body{background:#0d0d1a;color:#e0e0f0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;min-height:100vh}
 ::-webkit-scrollbar{width:4px;height:4px}
 .settings-btn{position:fixed;top:12px;right:12px;z-index:150;width:36px;height:36px;border-radius:50%;background:#1a1a2e;border:1px solid #ffffff22;color:#aaa;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}
 .settings-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:#000000cc;z-index:200;display:flex;align-items:flex-end;justify-content:center}
@@ -110,17 +110,23 @@ td.site-td{padding:8px;font-weight:700;font-size:11px;background:#13132a;positio
 <div id="app"></div>
 <script>
 // Firebase 초기화
-var firebaseConfig = {
-  apiKey: "AIzaSyAQzhhO8NbhvUkNOjnjvVJgNNN4vx8KRXU",
-  authDomain: "team-order-1cfb0.firebaseapp.com",
-  databaseURL: "https://team-order-1cfb0-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "team-order-1cfb0",
-  storageBucket: "team-order-1cfb0.firebasestorage.app",
-  messagingSenderId: "1083754540996",
-  appId: "1:1083754540996:web:68dae3bb04806395b47e91"
-};
-firebase.initializeApp(firebaseConfig);
-var db = firebase.database();
+
+// localStorage 버전 체크 - 구버전 데이터 초기화
+var APP_VER = '8.1';
+if(localStorage.getItem('appVer') !== APP_VER){
+  var myName = localStorage.getItem('myName');
+  var myNameOpen = localStorage.getItem('myNameOpen');
+  var d1Open = localStorage.getItem('d1Open');
+  var sundayCount = localStorage.getItem('sundayCount');
+  var dayHistory = localStorage.getItem('dayHistory');
+  localStorage.clear();
+  if(myName) localStorage.setItem('myName', myName);
+  if(myNameOpen) localStorage.setItem('myNameOpen', myNameOpen);
+  if(d1Open) localStorage.setItem('d1Open', d1Open);
+  if(sundayCount) localStorage.setItem('sundayCount', sundayCount);
+  if(dayHistory) localStorage.setItem('dayHistory', dayHistory);
+  localStorage.setItem('appVer', APP_VER);
+}
 var TODAY = new Date().toISOString().slice(0,10); // YYYY-MM-DD
 
 function startFirebaseListener(){}
@@ -423,7 +429,7 @@ function h(tag,attrs,children){
 }
 
 function applySettings(s){
-  var fonts={"noto":"'Noto Sans KR',sans-serif","system":"-apple-system,sans-serif","nanum":"'Nanum Gothic',sans-serif"};
+  var fonts={"noto":"-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif","system":"-apple-system,sans-serif","nanum":"'Nanum Gothic',sans-serif"};
   var sizeMap=[10,11,12,13,14,15,16];
   var skins={
     "dark":{bg:"#0d0d1a",card:"#13132a",hdr1:"#0d0d1a",hdr2:"#1a1a3e"},
@@ -479,7 +485,7 @@ function render(){
   var htitle=h("div",{className:"header-title"});
   var subEl=document.createElement("div");
 subEl.className="header-sub";
-subEl.innerHTML="FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v7.9</span>";
+subEl.innerHTML="FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v8.2</span>";
 var reloadBtn=document.createElement("span");
 reloadBtn.style.cssText="color:#ffd93d;font-size:14px;cursor:pointer;margin-left:8px";
 reloadBtn.textContent="🔄";
