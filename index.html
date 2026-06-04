@@ -74,6 +74,11 @@ td.site-td{padding:8px;font-weight:700;font-size:11px;background:#13132a;positio
 .et.absent{color:#ff6b6b}
 .et.vacation{color:#ffd93d}
 .et.seaworld{color:#88eeff}
+.lock-btn{position:fixed;top:12px;left:12px;z-index:150;width:36px;height:36px;border-radius:50%;background:#1a1a2e;border:1px solid #ffffff22;color:#aaa;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}
+.lock-btn.admin{border-color:#ffd93d;color:#ffd93d;background:#ffd93d11}
+.sync-btn{position:fixed;bottom:20px;right:16px;z-index:150;padding:10px 18px;border-radius:20px;background:#4a9eff22;border:1px solid #4a9eff44;color:#4a9eff;font-size:13px;font-weight:700;cursor:pointer;user-select:none;display:flex;align-items:center;gap:6px}
+.sync-btn.syncing{opacity:0.6}
+.disabled-btn{opacity:0.35;pointer-events:none}
 .settings-btn{position:fixed;top:12px;right:12px;z-index:150;width:36px;height:36px;border-radius:50%;background:#1a1a2e;border:1px solid #ffffff22;color:#aaa;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}
 .settings-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:#000000cc;z-index:200;display:flex;align-items:flex-end;justify-content:center}
 .settings-inner{background:#13132a;border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-width:480px;max-height:70vh;overflow-y:auto}
@@ -88,10 +93,62 @@ td.site-td{padding:8px;font-weight:700;font-size:11px;background:#13132a;positio
 .sun-btn{width:26px;height:26px;border-radius:6px;background:#1a1a2e;border:1px solid #333;color:#aaa;font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}
 .sun-cnt{font-size:13px;font-weight:700;min-width:20px;text-align:center}
 </style>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body>
 <div id="app"></div>
 <script>
+// Firebase 초기화
+var firebaseConfig={
+  apiKey:"AIzaSyAQzhhO8NbhvUkNOjnjvVJgNNN4vx8KRXU",
+  authDomain:"team-order-1cfb0.firebaseapp.com",
+  databaseURL:"https://team-order-1cfb0-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"team-order-1cfb0",
+  storageBucket:"team-order-1cfb0.firebasestorage.app",
+  messagingSenderId:"1083754540996",
+  appId:"1:1083754540996:web:68dae3bb04806395b47e91"
+};
+firebase.initializeApp(firebaseConfig);
+var db=firebase.database();
+
+// 관리자 체크
+function isAdmin(){return localStorage.getItem('adminMode')==='true';}
+function setAdmin(v){localStorage.setItem('adminMode',v?'true':'false');}
+
+// Firebase에서 데이터 불러오기
+function syncFromFirebase(callback){
+  db.ref('forklift').once('value').then(function(snap){
+    var data=snap.val()||{};
+    var changed=false;
+    if(data.carDays&&Array.isArray(data.carDays)){state.carDays=data.carDays;changed=true;}
+    if(data.absentWorkers&&Array.isArray(data.absentWorkers)){state.absentWorkers=data.absentWorkers;changed=true;}
+    if(data.dayExcludes&&Array.isArray(data.dayExcludes)){state.dayExcludes=data.dayExcludes;changed=true;}
+    if(changed)render();
+    if(callback)callback();
+  }).catch(function(){if(callback)callback();});
+}
+
+// Firebase 실시간 리스너
+var fbListening=false;
+function startFbListener(){
+  if(fbListening)return;
+  fbListening=true;
+  db.ref('forklift').on('value',function(snap){
+    var data=snap.val()||{};
+    var patch={};
+    if(data.carDays&&Array.isArray(data.carDays))patch.carDays=data.carDays;
+    if(data.absentWorkers&&Array.isArray(data.absentWorkers))patch.absentWorkers=data.absentWorkers;
+    if(data.dayExcludes&&Array.isArray(data.dayExcludes))patch.dayExcludes=data.dayExcludes;
+    if(Object.keys(patch).length>0){for(var k in patch)state[k]=patch[k];render();}
+  });
+}
+
+// Firebase에 저장 (관리자만)
+function saveCarDays(days){if(isAdmin())db.ref('forklift/carDays').set(days);}
+function saveAbsentWorkers(workers){if(isAdmin())db.ref('forklift/absentWorkers').set(workers);}
+function saveDayExcludes(data){if(isAdmin())db.ref('forklift/dayExcludes').set(data);}
+
 var WORKERS=["이원훈","장형규","조현철","박진호","홍인석","하정남","황정호","김현진","전창범","오규종","김경훈","정철수","황인태","안찬범","김상원","이동현","김태민","김성환","김세영","홍원진","이재일","이준영","김태호","김택성","채관기","김재원","장병숙","윤광덕","박성기"];
 var N=WORKERS.length;
 var KR=["일","월","화","수","목","금","토"];
@@ -242,6 +299,7 @@ var state={
   })(),
   firstWorker:(function(){try{var s=JSON.parse(localStorage.getItem('firstWorker')||'null');if(s&&s.date===new Date().toDateString())return s.name||'';}catch(e){}return '';})(),
   myName:localStorage.getItem('myName')||'',
+  absentWorkers:[],
   dayExcludes:(function(){try{var s=JSON.parse(localStorage.getItem('dayExcludes')||'null');if(s&&s.date===new Date().toDateString()&&Array.isArray(s.data))return s.data;}catch(e){}return [{},{},{},{},{},{},{}];})(),
   sundayCount:parseInt(localStorage.getItem('sundayCount')||'4',10),
   history:(function(){try{return JSON.parse(localStorage.getItem('dayHistory')||'[]');}catch(e){return[];}})(),
@@ -276,12 +334,39 @@ function render(){
   if(!Array.isArray(dayExcl)||dayExcl.length!==7){dayExcl=[{},{},{},{},{},{},{}];state.dayExcludes=dayExcl;}
   var sc=state.sundayCount;
   var autoVac=getAutoVac(state.weekDateObjs);
-  var merged=dayExcl.map(function(m,i){var r=Object.assign({},autoVac[i]);if(m&&typeof m==='object')Object.keys(m).forEach(function(k){r[k]=m[k];});return r;});
+  var merged=dayExcl.map(function(m,i){var r=Object.assign({},autoVac[i]);if(m&&typeof m==='object')Object.keys(m).forEach(function(k){r[k]=m[k];});// 결근자 항상 반영
+  (state.absentWorkers||[]).forEach(function(w){if(!r[w])r[w]="결근";});return r;});
   var allSel=cd.every(function(c){return c!==null;});
   var sched=(state.firstWorker&&allSel)?calcSchedule(cd,merged,state.firstWorker,sc,wk):null;
 
   var app=document.getElementById("app");
   app.innerHTML="";
+
+  // 자물쇠 버튼
+  var lockBtn=h("div",{className:"lock-btn"+(isAdmin()?" admin":"")},isAdmin()?"🔓":"🔒");
+  lockBtn.onclick=function(){
+    if(isAdmin()){
+      if(confirm("관리자 모드를 해제할까요?")){setAdmin(false);render();}
+    } else {
+      var pw=prompt("관리자 비밀번호를 입력하세요");
+      if(pw==="100410004"){setAdmin(true);alert("관리자 모드 활성화!");render();}
+      else if(pw!==null){alert("비밀번호가 틀렸습니다.");}
+    }
+  };
+  app.appendChild(lockBtn);
+
+  // 동기화 버튼
+  var syncBtn=h("div",{className:"sync-btn"},"🔄 동기화");
+  syncBtn.onclick=function(){
+    syncBtn.className="sync-btn syncing";
+    syncBtn.textContent="⏳ 동기화중...";
+    syncFromFirebase(function(){
+      syncBtn.className="sync-btn";
+      syncBtn.textContent="✅ 동기화됨";
+      setTimeout(function(){syncBtn.textContent="🔄 동기화";},2000);
+    });
+  };
+  app.appendChild(syncBtn);
 
   var settBtn=h("div",{className:"settings-btn"},"⚙️");
   settBtn.onclick=function(){setState({settingsOpen:true});};
@@ -291,7 +376,7 @@ function render(){
   var htitle=h("div",{className:"header-title"});
   var subEl=document.createElement("div");
   subEl.className="header-sub";
-  subEl.innerHTML="FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v6.2</span>";
+  subEl.innerHTML="FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v6.3</span>";
   var reloadBtn=document.createElement("span");
   reloadBtn.style.cssText="color:#ffd93d;font-size:14px;cursor:pointer;margin-left:8px";
   reloadBtn.textContent="🔄";
@@ -313,11 +398,11 @@ function render(){
     var col=h("div",{className:"day-col"});
     col.appendChild(h("div",{className:"day-label",style:"color:"+(isWe?"#ff6b6b":"#aaa")},day));
     col.appendChild(h("div",{className:"day-date"},wd[idx]));
-    var btnY=h("div",{className:"btn"+(val===true?" on-yes":"")},"있음");
-    (function(i){btnY.onclick=function(){toggleCar(i,true);};})(idx);
+    var btnY=h("div",{className:"btn"+(val===true?" on-yes":"")+(isAdmin()?"":" disabled-btn")},"있음");
+    if(isAdmin()){(function(i){btnY.onclick=function(){toggleCar(i,true);};})(idx);}
     col.appendChild(btnY);
-    var btnN=h("div",{className:"btn"+(val===false?" on-no":"")},"없음");
-    (function(i){btnN.onclick=function(){toggleCar(i,false);};})(idx);
+    var btnN=h("div",{className:"btn"+(val===false?" on-no":"")+(isAdmin()?"":" disabled-btn")},"없음");
+    if(isAdmin()){(function(i){btnN.onclick=function(){toggleCar(i,false);};})(idx);}
     col.appendChild(btnN);
     var btnE=h("div",{className:"btn"+(exCount>0?" has-excl":" no-excl")});
     if(exCount>0){
@@ -327,7 +412,8 @@ function render(){
       if(swCnt>0)parts.push("씨"+swCnt);
       btnE.textContent=parts.join(" ");
     } else {btnE.textContent="제외";}
-    (function(i){btnE.onclick=function(){setState({popupDay:i});};})(idx);
+    if(isAdmin()){(function(i){btnE.onclick=function(){setState({popupDay:i});};})(idx);}
+    else{btnE.className+=" disabled-btn";}
     col.appendChild(btnE);
 
     dayRow.appendChild(col);
@@ -774,11 +860,14 @@ function selectFirstWorker(name){
   }
 }
 function toggleCar(idx,val){
+  if(!isAdmin())return;
   var c=state.carDays.slice();c[idx]=c[idx]===val?null:val;
   localStorage.setItem('carPlan',JSON.stringify({date:new Date().toDateString(),days:c}));
+  saveCarDays(c);
   setState({carDays:c});
 }
 function toggleExcl(idx,name){
+  if(!isAdmin())return;
   var d=state.dayExcludes.map(function(e,i){
     if(i!==idx)return e;
     var u=Object.assign({},e);
@@ -786,11 +875,24 @@ function toggleExcl(idx,name){
     if(!cur)u[name]="결근";else if(cur==="결근")u[name]="휴가";else if(cur==="휴가")u[name]="씨월드";else delete u[name];
     return u;
   });
+  // 결근자 처리: absentWorkers에 추가/제거
+  var absent=state.absentWorkers.slice();
+  var newStatus=d[idx][name];
+  if(newStatus==="결근"){
+    if(absent.indexOf(name)<0)absent.push(name);
+  } else {
+    absent=absent.filter(function(w){return w!==name;});
+  }
   localStorage.setItem('dayExcludes',JSON.stringify({date:new Date().toDateString(),data:d}));
-  setState({dayExcludes:d});
+  saveDayExcludes(d);
+  saveAbsentWorkers(absent);
+  setState({dayExcludes:d,absentWorkers:absent});
 }
 
-render();
+// 앱 시작 - Firebase 동기화 후 렌더
+syncFromFirebase(function(){
+  startFbListener();
+});
 </script>
 </body>
 </html>
