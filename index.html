@@ -74,11 +74,24 @@ td.site-td{padding:8px;font-weight:700;font-size:11px;background:#13132a;positio
 .et.absent{color:#ff6b6b}
 .et.vacation{color:#ffd93d}
 .et.seaworld{color:#88eeff}
-.lock-btn{position:fixed;top:12px;left:12px;z-index:150;width:36px;height:36px;border-radius:50%;background:#1a1a2e;border:1px solid #ffffff22;color:#aaa;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}
+.lock-btn{position:fixed;top:12px;right:52px;z-index:150;width:36px;height:36px;border-radius:50%;background:#1a1a2e;border:1px solid #ffffff22;color:#aaa;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}
 .lock-btn.admin{border-color:#ffd93d;color:#ffd93d;background:#ffd93d11}
-.sync-btn{position:fixed;bottom:20px;right:16px;z-index:150;padding:10px 18px;border-radius:20px;background:#4a9eff22;border:1px solid #4a9eff44;color:#4a9eff;font-size:13px;font-weight:700;cursor:pointer;user-select:none;display:flex;align-items:center;gap:6px}
+.top-btn-group{position:fixed;top:12px;left:12px;z-index:150;display:flex;gap:6px;align-items:center}
+.sync-btn{padding:7px 12px;border-radius:16px;background:#4a9eff22;border:1px solid #4a9eff44;color:#4a9eff;font-size:12px;font-weight:700;cursor:pointer;user-select:none}
 .sync-btn.syncing{opacity:0.6}
+.test-btn{padding:7px 12px;border-radius:16px;background:#ff9f7f22;border:1px solid #ff9f7f44;color:#ff9f7f;font-size:12px;font-weight:700;cursor:pointer;user-select:none}
+.test-btn.active{background:#ff9f7f44;border-color:#ff9f7f}
 .disabled-btn{opacity:0.35;pointer-events:none}
+.vessel-popup-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:#000000cc;z-index:300;display:flex;flex-direction:column}
+.vessel-popup{background:#13132a;flex:1;display:flex;flex-direction:column;margin-top:60px;border-radius:20px 20px 0 0;overflow:hidden}
+.vessel-head{padding:16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #ffffff11}
+.vessel-title{font-size:15px;font-weight:900;color:#fff}
+.vessel-close{color:#555;font-size:20px;cursor:pointer}
+.vessel-info{padding:12px 16px;background:#0d0d1a;display:flex;gap:16px;flex-wrap:wrap}
+.vessel-info-item{font-size:11px;color:#888}
+.vessel-info-val{font-size:13px;font-weight:700;color:#4a9eff;margin-top:2px}
+#vessel-map{flex:1;min-height:300px}
+.vessel-status{padding:8px 16px;font-size:11px;color:#ffd93d;text-align:center}
 .settings-btn{position:fixed;top:12px;right:12px;z-index:150;width:36px;height:36px;border-radius:50%;background:#1a1a2e;border:1px solid #ffffff22;color:#aaa;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}
 .settings-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:#000000cc;z-index:200;display:flex;align-items:flex-end;justify-content:center}
 .settings-inner{background:#13132a;border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-width:480px;max-height:70vh;overflow-y:auto}
@@ -93,24 +106,12 @@ td.site-td{padding:8px;font-weight:700;font-size:11px;background:#13132a;positio
 .sun-btn{width:26px;height:26px;border-radius:6px;background:#1a1a2e;border:1px solid #333;color:#aaa;font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}
 .sun-cnt{font-size:13px;font-weight:700;min-width:20px;text-align:center}
 </style>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body>
 <div id="app"></div>
 <script>
-// Firebase 초기화
-var firebaseConfig={
-  apiKey:"AIzaSyAQzhhO8NbhvUkNOjnjvVJgNNN4vx8KRXU",
-  authDomain:"team-order-1cfb0.firebaseapp.com",
-  databaseURL:"https://team-order-1cfb0-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:"team-order-1cfb0",
-  storageBucket:"team-order-1cfb0.firebasestorage.app",
-  messagingSenderId:"1083754540996",
-  appId:"1:1083754540996:web:68dae3bb04806395b47e91"
-};
-firebase.initializeApp(firebaseConfig);
-var db=firebase.database();
+// Firebase REST API
+var FB_URL='https://team-order-1cfb0-default-rtdb.asia-southeast1.firebasedatabase.app/forklift';
 
 // 관리자 체크
 function isAdmin(){return localStorage.getItem('adminMode')==='true';}
@@ -118,36 +119,86 @@ function setAdmin(v){localStorage.setItem('adminMode',v?'true':'false');}
 
 // Firebase에서 데이터 불러오기
 function syncFromFirebase(callback){
-  db.ref('forklift').once('value').then(function(snap){
-    var data=snap.val()||{};
-    var changed=false;
-    if(data.carDays&&Array.isArray(data.carDays)){state.carDays=data.carDays;changed=true;}
-    if(data.absentWorkers&&Array.isArray(data.absentWorkers)){state.absentWorkers=data.absentWorkers;changed=true;}
-    if(data.dayExcludes&&Array.isArray(data.dayExcludes)){state.dayExcludes=data.dayExcludes;changed=true;}
-    if(changed)render();
+  fetch(FB_URL+'.json').then(function(r){return r.json();}).then(function(data){
+    if(data){
+      if(data.carDays&&Array.isArray(data.carDays))state.carDays=data.carDays;
+      if(data.absentWorkers&&Array.isArray(data.absentWorkers))state.absentWorkers=data.absentWorkers;
+      if(data.dayExcludes&&Array.isArray(data.dayExcludes))state.dayExcludes=data.dayExcludes;
+      if(typeof data.sundayCount==='number')state.sundayCount=data.sundayCount;
+      if(data.firstWorker)state.firstWorker=data.firstWorker;
+    }
+    // 다음날 대양1번 자동 계산
+    autoSetFirstWorker();
+    render();
     if(callback)callback();
-  }).catch(function(){if(callback)callback();});
+  }).catch(function(){
+    autoSetFirstWorker();
+    render();
+    if(callback)callback();
+  });
 }
 
-// Firebase 실시간 리스너
+function autoSetFirstWorker(){
+  // Firebase에서 받은 firstWorker가 오늘 날짜가 아니면 자동 계산
+  var saved=null;
+  try{saved=JSON.parse(localStorage.getItem('firstWorker')||'null');}catch(e){}
+  var todayStr=new Date().toDateString();
+  if(saved&&saved.date===todayStr&&saved.name)return; // 오늘 이미 설정됨
+
+  // 전날 history에서 대양 1번 다음 사람 계산
+  var hist=state.history||[];
+  if(hist.length===0)return;
+  var yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);
+  var yStr=yesterday.toDateString();
+  var yEntry=hist.find(function(h){return h.date===yStr;});
+  if(!yEntry||!yEntry.name)return;
+
+  // 전날 대양1번의 다음 순번
+  var idx=WORKERS.indexOf(yEntry.name);
+  if(idx<0)return;
+  var absent=state.absentWorkers||[];
+  var next=idx;
+  for(var i=1;i<=N;i++){
+    next=(idx+i)%N;
+    if(absent.indexOf(WORKERS[next])<0)break;
+  }
+  var newFirst=WORKERS[next];
+  state.firstWorker=newFirst;
+  localStorage.setItem('firstWorker',JSON.stringify({date:todayStr,name:newFirst}));
+  if(isAdmin())saveFirstWorker(newFirst);
+}
+
+// Firebase에 저장 (관리자만)
+function saveCarDays(days){
+  if(!isAdmin())return;
+  fetch(FB_URL+'/carDays.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(days)});
+}
+function saveSundayCount(cnt){
+  if(!isAdmin())return;
+  fetch(FB_URL+'/sundayCount.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(cnt)});
+}
+function saveFirstWorker(name){
+  if(!isAdmin())return;
+  fetch(FB_URL+'/firstWorker.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(name)});
+}
+function saveAbsentWorkers(workers){
+  if(!isAdmin())return;
+  fetch(FB_URL+'/absentWorkers.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(workers)});
+}
+function saveDayExcludes(data){
+  if(!isAdmin())return;
+  fetch(FB_URL+'/dayExcludes.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+}
+
+// 실시간 리스너 (30초마다 폴링)
 var fbListening=false;
 function startFbListener(){
   if(fbListening)return;
   fbListening=true;
-  db.ref('forklift').on('value',function(snap){
-    var data=snap.val()||{};
-    var patch={};
-    if(data.carDays&&Array.isArray(data.carDays))patch.carDays=data.carDays;
-    if(data.absentWorkers&&Array.isArray(data.absentWorkers))patch.absentWorkers=data.absentWorkers;
-    if(data.dayExcludes&&Array.isArray(data.dayExcludes))patch.dayExcludes=data.dayExcludes;
-    if(Object.keys(patch).length>0){for(var k in patch)state[k]=patch[k];render();}
-  });
+  setInterval(function(){
+    if(!document.hidden)syncFromFirebase(null);
+  },600000);
 }
-
-// Firebase에 저장 (관리자만)
-function saveCarDays(days){if(isAdmin())db.ref('forklift/carDays').set(days);}
-function saveAbsentWorkers(workers){if(isAdmin())db.ref('forklift/absentWorkers').set(workers);}
-function saveDayExcludes(data){if(isAdmin())db.ref('forklift/dayExcludes').set(data);}
 
 var WORKERS=["이원훈","장형규","조현철","박진호","홍인석","하정남","황정호","김현진","전창범","오규종","김경훈","정철수","황인태","안찬범","김상원","이동현","김태민","김성환","김세영","홍원진","이재일","이준영","김태호","김택성","채관기","김재원","장병숙","윤광덕","박성기"];
 var N=WORKERS.length;
@@ -297,16 +348,25 @@ var state={
     try{var s=JSON.parse(localStorage.getItem('carPlan')||'null');if(s&&s.date===new Date().toDateString()&&Array.isArray(s.days))return s.days;}catch(e){}
     var days=[null,null,null,null,null,null,null];var wk=getWeekDays();for(var i=0;i<wk.length;i++){if(wk[i]==="일")days[i]=false;}return days;
   })(),
-  firstWorker:(function(){try{var s=JSON.parse(localStorage.getItem('firstWorker')||'null');if(s&&s.date===new Date().toDateString())return s.name||'';}catch(e){}return '';})(),
+  firstWorker:(function(){
+    try{
+      var s=JSON.parse(localStorage.getItem('firstWorker')||'null');
+      if(s&&s.date===new Date().toDateString())return s.name||'';
+    }catch(e){}
+    return '';
+  })(),
   myName:localStorage.getItem('myName')||'',
   absentWorkers:[],
+  testMode:false,
+  vesselPopup:false,
+  vesselData:null,
   dayExcludes:(function(){try{var s=JSON.parse(localStorage.getItem('dayExcludes')||'null');if(s&&s.date===new Date().toDateString()&&Array.isArray(s.data))return s.data;}catch(e){}return [{},{},{},{},{},{},{}];})(),
   sundayCount:parseInt(localStorage.getItem('sundayCount')||'4',10),
   history:(function(){try{return JSON.parse(localStorage.getItem('dayHistory')||'[]');}catch(e){return[];}})(),
   settings:{font:"system",size:4,skin:"dark"},
   popupDay:null,vacPopup:false,settingsOpen:false,
   myNameOpen:localStorage.getItem('myNameOpen')!=='false',
-  d1Open:localStorage.getItem('d1Open')!=='false',
+  d1Open:localStorage.getItem('d1Open')==='true',
   weekDates:getWeekDates(),weekDays:getWeekDays(),weekDateObjs:getWeekDateObjs()
 };
 
@@ -342,7 +402,12 @@ function render(){
   var app=document.getElementById("app");
   app.innerHTML="";
 
-  // 자물쇠 버튼
+  // 관리자 모드 텍스트 (자물쇠 왼쪽)
+  if(isAdmin()){
+    var adminLabel=h("div",{style:"position:fixed;top:16px;right:92px;z-index:150;font-size:12px;font-weight:900;color:#ffd93d;letter-spacing:1px;text-shadow:0 0 8px #ffd93d88"},"관리자 모드");
+    app.appendChild(adminLabel);
+  }
+  // 자물쇠 버튼 (설정 왼쪽)
   var lockBtn=h("div",{className:"lock-btn"+(isAdmin()?" admin":"")},isAdmin()?"🔓":"🔒");
   lockBtn.onclick=function(){
     if(isAdmin()){
@@ -355,18 +420,21 @@ function render(){
   };
   app.appendChild(lockBtn);
 
-  // 동기화 버튼
+  // 상단 왼쪽 버튼 그룹 (동기화 + 테스트)
+  var topBtnGroup=h("div",{className:"top-btn-group"});
+
   var syncBtn=h("div",{className:"sync-btn"},"🔄 동기화");
   syncBtn.onclick=function(){
     syncBtn.className="sync-btn syncing";
-    syncBtn.textContent="⏳ 동기화중...";
+    syncBtn.textContent="⏳ ...";
     syncFromFirebase(function(){
       syncBtn.className="sync-btn";
       syncBtn.textContent="✅ 동기화됨";
       setTimeout(function(){syncBtn.textContent="🔄 동기화";},2000);
     });
   };
-  app.appendChild(syncBtn);
+  topBtnGroup.appendChild(syncBtn);
+  app.appendChild(topBtnGroup);
 
   var settBtn=h("div",{className:"settings-btn"},"⚙️");
   settBtn.onclick=function(){setState({settingsOpen:true});};
@@ -376,11 +444,23 @@ function render(){
   var htitle=h("div",{className:"header-title"});
   var subEl=document.createElement("div");
   subEl.className="header-sub";
-  subEl.innerHTML="FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v6.3</span>";
+  subEl.innerHTML="FORKLIFT WEEKLY SCHEDULE <span style='color:#4a9eff44;font-size:10px'>v7.3</span>";
   var reloadBtn=document.createElement("span");
   reloadBtn.style.cssText="color:#ffd93d;font-size:14px;cursor:pointer;margin-left:8px";
   reloadBtn.textContent="🔄";
-  reloadBtn.onclick=function(){location.reload();};
+  reloadBtn.onclick=function(){
+    if(sessionStorage.getItem('reloaded')){
+      reloadBtn.style.opacity='0.3';
+      reloadBtn.style.pointerEvents='none';
+      return;
+    }
+    sessionStorage.setItem('reloaded','1');
+    location.reload();
+  };
+  if(sessionStorage.getItem('reloaded')){
+    reloadBtn.style.opacity='0.3';
+    reloadBtn.style.pointerEvents='none';
+  }
   subEl.appendChild(reloadBtn);
   htitle.appendChild(subEl);
   htitle.appendChild(h("div",{className:"header-date"},"오늘 · "+fmtToday()));
@@ -398,11 +478,11 @@ function render(){
     var col=h("div",{className:"day-col"});
     col.appendChild(h("div",{className:"day-label",style:"color:"+(isWe?"#ff6b6b":"#aaa")},day));
     col.appendChild(h("div",{className:"day-date"},wd[idx]));
-    var btnY=h("div",{className:"btn"+(val===true?" on-yes":"")+(isAdmin()?"":" disabled-btn")},"있음");
-    if(isAdmin()){(function(i){btnY.onclick=function(){toggleCar(i,true);};})(idx);}
+    var btnY=h("div",{className:"btn"+(val===true?" on-yes":"")},"있음");
+    (function(i){btnY.onclick=function(){toggleCar(i,true);};})(idx);
     col.appendChild(btnY);
-    var btnN=h("div",{className:"btn"+(val===false?" on-no":"")+(isAdmin()?"":" disabled-btn")},"없음");
-    if(isAdmin()){(function(i){btnN.onclick=function(){toggleCar(i,false);};})(idx);}
+    var btnN=h("div",{className:"btn"+(val===false?" on-no":"")},"없음");
+    (function(i){btnN.onclick=function(){toggleCar(i,false);};})(idx);
     col.appendChild(btnN);
     var btnE=h("div",{className:"btn"+(exCount>0?" has-excl":" no-excl")});
     if(exCount>0){
@@ -412,8 +492,7 @@ function render(){
       if(swCnt>0)parts.push("씨"+swCnt);
       btnE.textContent=parts.join(" ");
     } else {btnE.textContent="제외";}
-    if(isAdmin()){(function(i){btnE.onclick=function(){setState({popupDay:i});};})(idx);}
-    else{btnE.className+=" disabled-btn";}
+    (function(i){btnE.onclick=function(){setState({popupDay:i});};})(idx);
     col.appendChild(btnE);
 
     dayRow.appendChild(col);
@@ -445,14 +524,14 @@ function render(){
     infoLeft.appendChild(infoLine);
   }
   var infoRight=h("div",{style:"display:flex;flex-direction:column;align-items:flex-end;gap:2px"});
-  var lbl2=h("div",{style:"font-size:11px;color:#888"},"인원");
+  var lbl2=h("div",{style:"font-size:11px;color:#888"},"일요근무인원");
   var sr2=document.createElement("div");
   sr2.style.cssText="display:flex;align-items:center;gap:3px";
   var bm2=h("div",{className:"sun-btn"},"-");
-  bm2.onclick=function(){var v=Math.max(0,state.sundayCount-1);localStorage.setItem('sundayCount',v);setState({sundayCount:v});};
+  bm2.onclick=function(){var v=Math.max(0,state.sundayCount-1);localStorage.setItem('sundayCount',v);if(isAdmin())saveSundayCount(v);setState({sundayCount:v});};
   var cnt2=h("div",{className:"sun-cnt",style:"color:"+(sc>0?"#ffd93d":"#555")},String(sc));
   var bp2=h("div",{className:"sun-btn"},"+");
-  bp2.onclick=function(){var v=Math.min(29,state.sundayCount+1);localStorage.setItem('sundayCount',v);setState({sundayCount:v});};
+  bp2.onclick=function(){var v=Math.min(29,state.sundayCount+1);localStorage.setItem('sundayCount',v);if(isAdmin())saveSundayCount(v);setState({sundayCount:v});};
   sr2.appendChild(bm2);sr2.appendChild(cnt2);sr2.appendChild(bp2);
   infoRight.appendChild(lbl2);infoRight.appendChild(sr2);
   bottomRow.appendChild(infoLeft);bottomRow.appendChild(infoRight);
@@ -462,6 +541,9 @@ function render(){
   var tbtn=h("div",{className:"vac-btn",style:"background:#4a9eff22;border-color:#4a9eff44;color:#4a9eff"},"🌊 물때");
   tbtn.onclick=function(){window.open('https://www.badatime.com/105.html','_blank');};
   vb.appendChild(tbtn);
+  var sbtn=h("div",{className:"vac-btn",style:"background:#88eeff22;border-color:#88eeff44;color:#88eeff"},"🚢 선박 추적");
+  sbtn.onclick=function(){setState({vesselPopup:true});};
+  vb.appendChild(sbtn);
   var vbtn=h("div",{className:"vac-btn"},"📋 연간 휴가 리스트");
   vbtn.onclick=function(){setState({vacPopup:true});};
   vb.appendChild(vbtn);
@@ -496,12 +578,13 @@ function render(){
 
   // 대양 1번
   var d1Card=h("div",{className:"card",style:"border:1px solid #4a9eff22"});
-  var d1Head=h("div",{style:"display:flex;justify-content:space-between;align-items:center;cursor:pointer"});
+  var d1Head=h("div",{style:"display:flex;justify-content:space-between;align-items:center;"+(isAdmin()?"cursor:pointer":"")});
   var d1TitleEl=document.createElement("div");
   d1TitleEl.style.cssText="font-size:11px;font-weight:700;letter-spacing:2px;color:#4a9eff";
-  d1TitleEl.textContent="▪ 오늘 대양 · 1번 선택"+(state.firstWorker?" · "+state.firstWorker:"");
+  d1TitleEl.textContent="▪ 대양 1번"+(state.firstWorker?" · "+state.firstWorker:"" );
+  d1Head.appendChild(d1TitleEl);
   var d1Toggle=h("div",{style:"color:#aaa;font-size:11px;font-weight:700"},state.d1Open?"▲ 접기":"▼ 펼치기");
-  d1Head.appendChild(d1TitleEl);d1Head.appendChild(d1Toggle);
+  d1Head.appendChild(d1Toggle);
   d1Head.onclick=function(){var next=!state.d1Open;localStorage.setItem('d1Open',next);setState({d1Open:next});};
   d1Card.appendChild(d1Head);
   if(state.d1Open){
@@ -533,6 +616,7 @@ function render(){
 
   if(state.popupDay!==null){app.appendChild(renderPopup(state.popupDay,wk,wd,merged,dayExcl));}
   if(state.vacPopup){app.appendChild(renderVacPopup());}
+  if(state.vesselPopup){app.appendChild(renderVesselPopup());}
   if(state.settingsOpen){app.appendChild(renderSettings());}
 }
 
@@ -761,14 +845,23 @@ function renderPopup(idx,wk,wd,merged,dayExcl){
   inner.appendChild(h("div",{className:"phint"},"▪ 제외 인원 (탭: 없음→결근→휴가→씨월드→없음)"));
   var grid=h("div",{className:"grid4"});
   WORKERS.forEach(function(name){
+    var isAbsentWorker=(state.absentWorkers||[]).indexOf(name)>=0;
     var manual=(dayExcl[idx]||{})[name];
     var isAuto=!manual&&!!(merged[idx]||{})[name];
-    var btnCls="eb"+(manual==="결근"?" absent":manual==="휴가"?" vacation":manual==="씨월드"?" seaworld":isAuto?" autovac":"");
-    var nameCls="en"+(manual==="결근"?" absent":manual==="휴가"?" vacation":manual==="씨월드"?" seaworld":isAuto?" autovac":"");
-    var showType=manual||(isAuto?(merged[idx]||{})[name]+"(자동)":"");
+    var btnCls,nameCls,showType;
+    if(isAbsentWorker){
+      // 결근자: 결근/출근 표시
+      btnCls="eb absent";
+      nameCls="en absent";
+      showType="결근 → 출근";
+    } else {
+      btnCls="eb"+(manual==="결근"?" absent":manual==="씨월드"?" seaworld":isAuto?" autovac":"");
+      nameCls="en"+(manual==="결근"?" absent":manual==="씨월드"?" seaworld":isAuto?" autovac":"");
+      showType=manual||(isAuto?(merged[idx]||{})[name]+"(자동)":"");
+    }
     var btn2=h("div",{className:btnCls});
     btn2.appendChild(h("div",{className:nameCls},name));
-    if(showType){btn2.appendChild(h("div",{className:"et "+(manual==="결근"?"absent":manual==="씨월드"?"seaworld":"vacation")},showType));}
+    if(showType){btn2.appendChild(h("div",{className:"et "+(isAbsentWorker||manual==="결근"?"absent":manual==="씨월드"?"seaworld":"vacation")},showType));}
     (function(n){btn2.onclick=function(){toggleExcl(idx,n);};})(name);
     grid.appendChild(btn2);
   });
@@ -853,37 +946,308 @@ function selectFirstWorker(name){
     if(hist.length>2)hist=hist.slice(0,2);
     localStorage.setItem('dayHistory',JSON.stringify(hist));
     localStorage.setItem('firstWorker',JSON.stringify({date:today,name:newName}));
+    saveFirstWorker(newName);
     setState({firstWorker:newName,history:hist});
   } else {
     localStorage.setItem('firstWorker',JSON.stringify({date:new Date().toDateString(),name:newName}));
+    saveFirstWorker(newName);
     setState({firstWorker:newName});
   }
 }
+// 선박 실시간 추적
+// ===== 선박 추적 4척 =====
+var VESSELS=[
+  {id:'sw', label:'성우제주', name:'SUNGWOO JEJU',   mmsi:'440925000', accent:'#4a9eff'},
+  {id:'jo', label:'제이오션', name:'KS HERMES',       mmsi:'440708040', accent:'#ff9f7f'},
+  {id:'dy', label:'대양',     name:'DAEYANG',         mmsi:'440172610', accent:'#ffd93d'},
+  {id:'sea',label:'씨월드',   name:'SEAWORLD MARINE', mmsi:'441963000', accent:'#4eff9e'},
+];
+var VESSEL_API_KEY='4ea1dfb392d9329ddc6b979a55e80d5f2077b20c';
+var vesselWS=null;
+var vesselStates={};
+VESSELS.forEach(function(v){vesselStates[v.id]={status:'connecting',speed:'-',course:'-',dest:'-',lat:null,lon:null,updated:'-'};});
+var vesselDetailId=null;
+var vesselDetailMap=null;
+var vesselDetailMarker=null;
+
+function loadLeaflet(cb){
+  if(window.L){cb();return;}
+  var link=document.createElement('link');link.rel='stylesheet';
+  link.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+  document.head.appendChild(link);
+  var script=document.createElement('script');
+  script.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+  script.onload=cb;document.head.appendChild(script);
+}
+
+function startVesselTracking(){
+  if(vesselWS)return;
+  try{
+    vesselWS=new WebSocket('wss://stream.aisstream.io/v0/stream');
+    vesselWS.onopen=function(){
+      vesselWS.send(JSON.stringify({
+        APIKey:VESSEL_API_KEY,
+        BoundingBoxes:[[[-90,-180],[90,180]]],
+        FilterMessageTypes:['PositionReport'],
+        FiltersShipMMSI:VESSELS.map(function(v){return v.mmsi;})
+      }));
+      VESSELS.forEach(function(v){vesselStates[v.id].status='connecting';});
+      refreshVesselCards();
+    };
+    vesselWS.onmessage=function(e){
+      try{
+        var msg=JSON.parse(e.data);
+        var pos=msg.Message&&msg.Message.PositionReport;
+        if(!pos)return;
+        var mmsi=String((msg.MetaData&&msg.MetaData.MMSI)||'');
+        var vessel=VESSELS.find(function(v){return v.mmsi===mmsi;});
+        if(!vessel)return;
+        var st=vesselStates[vessel.id];
+        st.status='live';
+        st.speed=(pos.Sog||0).toFixed(1)+' kts';
+        st.course=Math.round(pos.Cog||0)+'°';
+        st.dest=((msg.MetaData&&msg.MetaData.Destination)||'').trim()||'-';
+        st.lat=pos.Latitude;st.lon=pos.Longitude;
+        st.updated=new Date().toLocaleTimeString('ko-KR');
+        refreshVesselCards();
+        if(vesselDetailId===vessel.id)updateVesselDetail(vessel.id);
+      }catch(err){}
+    };
+    vesselWS.onerror=function(){
+      VESSELS.forEach(function(v){vesselStates[v.id].status='error';});
+      refreshVesselCards();vesselWS=null;setTimeout(startVesselTracking,5000);
+    };
+    vesselWS.onclose=function(){
+      vesselWS=null;
+      VESSELS.forEach(function(v){if(vesselStates[v.id].status==='live')vesselStates[v.id].status='connecting';});
+      refreshVesselCards();setTimeout(startVesselTracking,3000);
+    };
+  }catch(e){
+    VESSELS.forEach(function(v){vesselStates[v.id].status='error';});
+    refreshVesselCards();
+  }
+}
+
+function refreshVesselCards(){
+  var wrap=document.getElementById('vessel-cards-wrap');
+  if(!wrap)return;
+  wrap.innerHTML='';
+  VESSELS.forEach(function(v){
+    var st=vesselStates[v.id];
+    var card=document.createElement('div');
+    card.style.cssText='background:#1a1a2e;border-radius:14px;border:1.5px solid '+(st.status==='live'?v.accent+'44':'#ffffff0a')+';padding:13px;cursor:pointer;position:relative;overflow:hidden;';
+    var dotColor=st.status==='live'?'#4eff4e':st.status==='error'?'#ff4e4e':'#ffd93d';
+    card.innerHTML=
+      '<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:'+v.accent+';margin-bottom:2px">'+v.label+'</div>'+
+      '<div style="font-size:10px;color:#555;margin-bottom:8px;font-weight:600">'+v.name+'</div>'+
+      '<div style="display:flex;align-items:center;gap:4px;margin-bottom:8px">'+
+        '<div style="width:6px;height:6px;border-radius:50%;background:'+dotColor+'"></div>'+
+        '<div style="font-size:10px;color:#666">'+(st.status==='live'?'실시간':st.status==='connecting'?'연결중...':'오류')+'</div>'+
+      '</div>'+
+      '<div style="display:flex;flex-direction:column;gap:4px">'+
+        '<div style="display:flex;justify-content:space-between"><span style="font-size:9px;color:#555;font-weight:700">속도</span><span style="font-size:11px;font-weight:700;color:#4eff9e">'+st.speed+'</span></div>'+
+        '<div style="display:flex;justify-content:space-between"><span style="font-size:9px;color:#555;font-weight:700">항로</span><span style="font-size:11px;font-weight:700;color:#aaa">'+st.course+'</span></div>'+
+        '<div style="display:flex;justify-content:space-between;gap:4px"><span style="font-size:9px;color:#555;font-weight:700;flex-shrink:0">목적지</span><span style="font-size:10px;font-weight:700;color:#aaa;text-align:right;word-break:break-all">'+st.dest+'</span></div>'+
+        '<div style="display:flex;justify-content:space-between"><span style="font-size:9px;color:#555;font-weight:700">갱신</span><span style="font-size:10px;color:#555">'+st.updated+'</span></div>'+
+      '</div>'+
+      '<div style="position:absolute;bottom:10px;right:10px;color:#ffffff22;font-size:14px">›</div>';
+    (function(id){card.onclick=function(){openVesselDetail(id);};})(v.id);
+    wrap.appendChild(card);
+  });
+}
+
+function openVesselDetail(id){
+  vesselDetailId=id;
+  var vessel=VESSELS.find(function(v){return v.id===id;});
+  var existing=document.getElementById('vessel-detail-bg');
+  if(existing)existing.parentNode.removeChild(existing);
+  vesselDetailMap=null;vesselDetailMarker=null;
+
+  var bg=document.createElement('div');
+  bg.id='vessel-detail-bg';
+  bg.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:#000000dd;z-index:600;display:flex;flex-direction:column;';
+
+  var popup=document.createElement('div');
+  popup.style.cssText='background:#0d0d1a;flex:1;display:flex;flex-direction:column;margin-top:60px;border-radius:20px 20px 0 0;overflow:hidden;';
+
+  var head=document.createElement('div');
+  head.style.cssText='padding:14px 16px;background:#13132a;border-bottom:1px solid #ffffff11;display:flex;align-items:center;gap:10px;flex-shrink:0;';
+  head.innerHTML=
+    '<div style="flex:1">'+
+      '<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:'+vessel.accent+'">'+vessel.label+'</div>'+
+      '<div style="font-size:11px;color:#555;font-weight:600">'+vessel.name+'</div>'+
+    '</div>'+
+    '<div id="vd-dot" style="width:8px;height:8px;border-radius:50%;background:#555;margin-right:4px"></div>';
+  var cls=document.createElement('div');
+  cls.style.cssText='width:30px;height:30px;border-radius:50%;background:#1a1a2e;border:1px solid #333;color:#aaa;font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;';
+  cls.textContent='✕';
+  cls.onclick=closeVesselDetail;
+  head.appendChild(cls);
+  popup.appendChild(head);
+
+  var infobar=document.createElement('div');
+  infobar.id='vd-infobar';
+  infobar.style.cssText='padding:10px 16px;background:#0a0a18;border-bottom:1px solid #ffffff08;display:flex;gap:12px;flex-wrap:wrap;flex-shrink:0;';
+  popup.appendChild(infobar);
+
+  var mapDiv=document.createElement('div');
+  mapDiv.id='vessel-detail-map';
+  mapDiv.style.cssText='flex:1;min-height:0;';
+  popup.appendChild(mapDiv);
+
+  bg.appendChild(popup);
+  document.getElementById('app').appendChild(bg);
+
+  loadLeaflet(function(){
+    setTimeout(function(){
+      var el=document.getElementById('vessel-detail-map');
+      if(!el)return;
+      var st=vesselStates[id];
+      var lat=st.lat||34.8,lon=st.lon||126.4,zoom=st.lat?10:7;
+      vesselDetailMap=L.map('vessel-detail-map').setView([lat,lon],zoom);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM',maxZoom:18}).addTo(vesselDetailMap);
+      if(st.lat){
+        var icon=L.divIcon({html:'<div style="font-size:26px;filter:drop-shadow(0 0 6px '+vessel.accent+')">🚢</div>',iconSize:[34,34],iconAnchor:[17,17],className:''});
+        vesselDetailMarker=L.marker([st.lat,st.lon],{icon:icon}).addTo(vesselDetailMap);
+        vesselDetailMarker.bindPopup('<b>'+vessel.label+'</b><br>'+st.speed+'<br>'+st.dest).openPopup();
+      }
+      updateVesselDetail(id);
+    },150);
+  });
+  updateVesselDetail(id);
+}
+
+function updateVesselDetail(id){
+  var vessel=VESSELS.find(function(v){return v.id===id;});
+  var st=vesselStates[id];
+  var dot=document.getElementById('vd-dot');
+  if(dot){dot.style.background=st.status==='live'?'#4eff4e':st.status==='error'?'#ff4e4e':'#ffd93d';}
+  var infobar=document.getElementById('vd-infobar');
+  if(infobar){
+    infobar.innerHTML=
+      mkInfo('상태',(st.status==='live'?'실시간':st.status==='connecting'?'연결중':'오류'),'#ffd93d')+
+      mkInfo('속도',st.speed,'#4eff9e')+
+      mkInfo('항로',st.course,'#4a9eff')+
+      mkInfo('목적지',st.dest,'#aaa')+
+      (st.lat?mkInfo('위도',st.lat.toFixed(4)+'°','#aaa'):'')+
+      (st.lon?mkInfo('경도',st.lon.toFixed(4)+'°','#aaa'):'')+
+      mkInfo('갱신',st.updated,'#555');
+  }
+  if(vesselDetailMap&&st.lat&&vesselDetailId===id){
+    if(!vesselDetailMarker){
+      var icon=L.divIcon({html:'<div style="font-size:26px;filter:drop-shadow(0 0 6px '+vessel.accent+')">🚢</div>',iconSize:[34,34],iconAnchor:[17,17],className:''});
+      vesselDetailMarker=L.marker([st.lat,st.lon],{icon:icon}).addTo(vesselDetailMap);
+      vesselDetailMarker.bindPopup('<b>'+vessel.label+'</b><br>'+st.speed+'<br>'+st.dest).openPopup();
+      vesselDetailMap.setView([st.lat,st.lon],10);
+    } else {
+      vesselDetailMarker.setLatLng([st.lat,st.lon]);
+      vesselDetailMarker.getPopup().setContent('<b>'+vessel.label+'</b><br>'+st.speed+'<br>'+st.dest);
+      vesselDetailMap.panTo([st.lat,st.lon]);
+    }
+  }
+}
+
+function mkInfo(label,val,color){
+  return '<div style="display:flex;flex-direction:column;gap:2px"><div style="font-size:9px;color:#555;font-weight:700;letter-spacing:1px">'+label+'</div><div style="font-size:12px;font-weight:700;color:'+color+'">'+val+'</div></div>';
+}
+
+function closeVesselDetail(){
+  vesselDetailId=null;
+  if(vesselDetailMap){vesselDetailMap.remove();vesselDetailMap=null;vesselDetailMarker=null;}
+  var bg=document.getElementById('vessel-detail-bg');
+  if(bg)bg.parentNode.removeChild(bg);
+}
+
+function closeVesselPopup(){
+  if(vesselWS){vesselWS.close();vesselWS=null;}
+  closeVesselDetail();
+  setState({vesselPopup:false});
+}
+
+function renderVesselPopup(){
+  var bg=document.createElement('div');
+  bg.className='vessel-popup-bg';
+  var inner=document.createElement('div');
+  inner.className='vessel-popup';
+  inner.onclick=function(e){e.stopPropagation();};
+
+  var head=document.createElement('div');
+  head.className='vessel-head';
+  var title=document.createElement('div');
+  title.className='vessel-title';
+  title.textContent='🚢 선박 실시간 추적';
+  var cls=document.createElement('div');
+  cls.className='vessel-close';
+  cls.textContent='✕';
+  cls.onclick=closeVesselPopup;
+  head.appendChild(title);head.appendChild(cls);
+  inner.appendChild(head);
+
+  var cardsWrap=document.createElement('div');
+  cardsWrap.id='vessel-cards-wrap';
+  cardsWrap.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px;overflow-y:auto;';
+  inner.appendChild(cardsWrap);
+
+  bg.appendChild(inner);
+  setTimeout(function(){
+    startVesselTracking();
+    refreshVesselCards();
+  },100);
+  return bg;
+}
+
 function toggleCar(idx,val){
-  if(!isAdmin())return;
   var c=state.carDays.slice();c[idx]=c[idx]===val?null:val;
-  localStorage.setItem('carPlan',JSON.stringify({date:new Date().toDateString(),days:c}));
-  saveCarDays(c);
+  if(isAdmin()){
+    localStorage.setItem('carPlan',JSON.stringify({date:new Date().toDateString(),days:c}));
+    saveCarDays(c);
+  }
   setState({carDays:c});
 }
 function toggleExcl(idx,name){
-  if(!isAdmin())return;
+  var isAbsent=(state.absentWorkers||[]).indexOf(name)>=0;
+  var absent=state.absentWorkers.slice();
+
+  if(isAbsent){
+    // 결근자는 다음날부터 결근/출근 2단계만
+    // 출근 클릭 → absentWorkers에서 제거 → 해당날부터 결근 해제
+    absent=absent.filter(function(w){return w!==name;});
+    var d2=state.dayExcludes.map(function(e,i){
+      if(i<idx)return e; // 이전 날은 유지
+      var u=Object.assign({},e);
+      delete u[name];
+      return u;
+    });
+    saveAbsentWorkers(absent);
+    saveDayExcludes(d2);
+    setState({dayExcludes:d2,absentWorkers:absent});
+    return;
+  }
+
+  // 일반 인원: 없음→결근→씨월드→없음 (휴가 제거)
   var d=state.dayExcludes.map(function(e,i){
     if(i!==idx)return e;
     var u=Object.assign({},e);
     var cur=u[name];
-    if(!cur)u[name]="결근";else if(cur==="결근")u[name]="휴가";else if(cur==="휴가")u[name]="씨월드";else delete u[name];
+    if(!cur)u[name]="결근";
+    else if(cur==="결근")u[name]="씨월드";
+    else delete u[name];
     return u;
   });
-  // 결근자 처리: absentWorkers에 추가/제거
-  var absent=state.absentWorkers.slice();
+
+  // 결근 등록시 absentWorkers에 추가 + 모든 날 결근 표시
   var newStatus=d[idx][name];
   if(newStatus==="결근"){
     if(absent.indexOf(name)<0)absent.push(name);
+    d=d.map(function(e){
+      var u=Object.assign({},e);
+      u[name]="결근";
+      return u;
+    });
   } else {
     absent=absent.filter(function(w){return w!==name;});
   }
-  localStorage.setItem('dayExcludes',JSON.stringify({date:new Date().toDateString(),data:d}));
+
   saveDayExcludes(d);
   saveAbsentWorkers(absent);
   setState({dayExcludes:d,absentWorkers:absent});
